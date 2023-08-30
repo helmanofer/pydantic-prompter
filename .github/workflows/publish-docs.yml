@@ -13,6 +13,7 @@ jobs:
         with:
           python-version: '3.10'
       - run: pip install pdm
+      - run: pdm config python.use_venv false -g
       - run: pdm install
       - run: pdm install -G docs
       - run: mkdocs gh-deploy --force
