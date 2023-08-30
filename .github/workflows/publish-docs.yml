@@ -3,9 +3,10 @@ on:
     branches:
       - main
 name: publish docs
+permissions:
+  contents: write
 jobs:
   publish:
-    name: publish
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -15,4 +16,11 @@ jobs:
       - run: pip install pdm
       - run: pdm config python.use_venv false -g
       - run: pdm install
+      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
+      - uses: actions/cache@v3
+        with:
+           key: mkdocs-material-${{ env.cache_id }}
+           path: .cache
+           restore-keys: |
+             mkdocs-material-
       - run: pdm run mkdocs gh-deploy --force
