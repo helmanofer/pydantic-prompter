@@ -1,8 +1,8 @@
-# pydatic-prompter
+# pydantic-prompter
 
 ### Installation
 
-`pip install pydatic-prompter`
+`pip install pydantic-prompter`
 
 ### setup
 

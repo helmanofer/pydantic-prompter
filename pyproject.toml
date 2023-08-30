@@ -1,5 +1,5 @@
 [project]
-name = "pydatic-prompter"
+name = "pydantic-prompter"
 version = "0.1.2"
 description = """This library helps you build prompts easily using Pydantic \
 This library is using [OpenAi function calling API](https://platform.openai.com/docs/guides/gpt/function-calling) \
@@ -44,4 +44,4 @@ docs = [
 ]
 
 [project.urls]
-Source = "https://github.com/helmanofer/pydatic-prompter"
+Source = "https://github.com/helmanofer/pydantic-prompter"
