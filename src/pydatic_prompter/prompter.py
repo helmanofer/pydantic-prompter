@@ -5,11 +5,14 @@ from typing import Dict, List, Any
 
 import yaml
 from jinja2 import Template
+from openai.error import AuthenticationError
 from pydantic import BaseModel, ValidationError
 from retry import retry
-from yaml.parser import ParserError
-from yaml.scanner import ScannerError
 
+from pydatic_prompter.exceptions import (
+    OpenAiAuthenticationError,
+    Retryable,
+    FailedToCastLLMResult, NonRetryable, FailedToParsePromptError, )
 
 logger = logging.getLogger()
 
@@ -44,12 +47,15 @@ class OpenAI(LLM):
         }
         messages = self.to_openai_format(messages)
         openai.api_key = os.getenv("OPENAI_API_KEY")
-        chat_completion = openai.ChatCompletion.create(
-            model=self.model_name,
-            messages=messages,
-            functions=[scheme],
-            function_call=_function_call,
-        )
+        try:
+            chat_completion = openai.ChatCompletion.create(
+                model=self.model_name,
+                messages=messages,
+                functions=[scheme],
+                function_call=_function_call,
+            )
+        except AuthenticationError as e:
+            raise OpenAiAuthenticationError(e)
         return chat_completion.choices[0].message["function_call"]["arguments"]
 
 
@@ -92,18 +98,9 @@ class PydanticParser(AnnotationParser):
         try:
             return self.return_cls.parse_raw(result)
         except ValidationError:
-            raise Exception(f"\n\nFailed to validate JSON: \n\n{result}\n\n")
-
-
-class TypingParser(AnnotationParser):
-    def llm_schema(self) -> str:
-        return self.return_cls.__name__
-
-    def cast_result(self, result: str):
-        try:
-            return self.return_cls(result)
-        except ValueError:
-            raise Exception(f"\n\nFailed to parse: \n\n{result}\n\n")
+            raise FailedToCastLLMResult(
+                f"\n\nFailed to validate JSON: \n\n{result}\n\n"
+            )
 
 
 class _Pr:
@@ -113,13 +110,16 @@ class _Pr:
         self.llm = llm
         self.parser = AnnotationParser.get_parser(function)
 
-    @retry(tries=3, delay=1, logger=logger)
+    @retry(tries=3, delay=1, logger=logger, exceptions=(Retryable,))
     def __call__(self, **inputs):
-        msgs = self.build_prompt(**inputs)
         try:
+            msgs = self.build_prompt(**inputs)
             return self.call_llm(msgs)
-        except Exception as e:
-            raise Exception(str(e) + f"\n\nPrompt:\n\n{self.build_string(**inputs)}")
+        except (OpenAiAuthenticationError, NonRetryable):
+            raise
+        except Retryable:
+            logger.error(f"\n\nPrompt:\n\n{self.build_string(**inputs)}")
+            raise
 
     def build_string(self, **inputs):
         msgs = self.build_prompt(**inputs)
@@ -139,8 +139,10 @@ class _Pr:
                 line = line.strip()
                 if line:
                     y_list.append(yaml.safe_load(line))
-        except (ParserError, ScannerError):
-            raise Exception(f"\n\nFailed to parse YAML: \n\n{y}\n\n{line}\n\n")
+        except Exception:
+            msg = f"\n\nFailed to parse prompt:\n{y}\nBad line:\n{line}\n"
+            logger.error(msg)
+            raise FailedToParsePromptError(msg)
 
         messages = [
             Message(
@@ -168,7 +170,3 @@ class Prompter:
 
     def __call__(self, function):
         return _Pr(function=function, jinja=self.jinja, llm=self.llm)
-
-
-if __name__ == "__main__":
-    logging.basicConfig()
