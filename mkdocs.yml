@@ -4,7 +4,7 @@ nav:
 theme:
   name: material
   features:
-      - content.code.copy
+    - content.code.copy
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -14,3 +14,5 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+
+repo_url: https://github.com/helmanofer/pydantic-prompter
