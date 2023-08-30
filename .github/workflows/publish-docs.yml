@@ -1,0 +1,15 @@
+on:
+  push:
+    branches:
+      - main
+name: publish docs
+jobs:
+  publish:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: 3.10
+    - run: pip install pdm
+    - run: pdm install
+    - run: pdm install -G docs
+    - run: mkdocs gh-deploy --force
