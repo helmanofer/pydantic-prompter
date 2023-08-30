@@ -1,7 +1,6 @@
-site_name: My Docs
+site_name: Pydantic Prompter Docs
 nav:
   - Home: index.md
-  - About: about.md
 theme:
   name: material
   features:

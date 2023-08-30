@@ -70,7 +70,7 @@ print(rank_recommendation_entries.build_string(json_entries=my_entries, user_que
     user: "query: Romantic comedy"
 ```
 
-## Good and bad practices
+## Best practices
 
 Explicitly state the parameter name you want to get, in this example, `title`
 
