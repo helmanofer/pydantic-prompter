@@ -21,4 +21,4 @@ jobs:
            path: .cache
            restore-keys: |
              mkdocs-material-
-      - run: pdm run mkdocs gh-deploy --force
+      - run: mkdocs gh-deploy --force
