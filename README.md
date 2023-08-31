@@ -1,4 +1,4 @@
-# pydantic-prompter
+# Pydantic Prompter
 
 ### Installation
 
@@ -29,7 +29,7 @@ class RecommendedEntry(BaseModel):
 class RecommendationResults(BaseModel):
     title: str
     entries: List[RecommendedEntry]
-    
+
 
 @Prompter(llm="openai", jinja=True, model_name="gpt-3.5-turbo-16k")
 def rank_recommendation_entries(
@@ -50,6 +50,7 @@ def rank_recommendation_entries(
     >> user: "query: {{ user_query }}"
 
     """
+
 
 my_entries = "[{\"text\": \"Description: Four everyday suburban guys come together as a ...."
 print(rank_recommendation_entries(json_entries=my_entries, user_query="Romantic comedy"))
