@@ -1,6 +1,6 @@
 [project]
 name = "pydantic-prompter"
-version = "0.1.8"
+version = "0.1.9"
 description = "This library helps you build prompts easily using Pydantic and OpenAi function calling API"
 authors = [
     { name = "Ofer Helman", email = "helmanofer@gmail.com" },
