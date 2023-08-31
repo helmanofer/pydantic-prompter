@@ -40,7 +40,7 @@ def rank_recommendation_entries(
     >> user: >
         Which of the following JSON entries fit best to the query. 
         order by best fit descending
-        Base your answer ONLY on the given YML entries, 
+        Base your answer ONLY on the given JSON entries, 
         if you are not sure, or there are no entries
 
     >> user: >
