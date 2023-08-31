@@ -20,9 +20,9 @@ def test_pydantic():
     @Prompter(jinja=True, llm="openai", model_name="gpt-3.5-turbo")
     def bbb(name) -> Hey:
         """
-        >> system: you are a writer
-        >> user: hi, my name is {{ name }} and my children are called, aa, bb, cc
-        >> user: |
+        - system: you are a writer
+        - user: hi, my name is {{ name }} and my children are called, aa, bb, cc
+        - user: |
             what is my name and my children name
         """
 
@@ -40,8 +40,8 @@ def test_generic():
     @Prompter(llm="openai", model_name="gpt-3.5-turbo")
     def aaa(name) -> MyChildren:
         """
-        >> user: hi, my name is {name}  and my children are called, aa, bb, cc
-        >> user: |
+        - user: hi, my name is {name}  and my children are called, aa, bb, cc
+        - user: |
             how many children do I have
         """
 

@@ -126,33 +126,16 @@ class _Pr:
         return "\n".join(map(str, msgs))
 
     def build_prompt(self, **inputs) -> List[Message]:
-        if self.jinja:
-            template = Template(self.function.__doc__, keep_trailing_newline=True)
-            y = template.render(**inputs)
-        else:
-            y = self.function.__doc__.format(**inputs)
-
-        line = ""
-        try:
-            y_list = []
-            for line in y.split(">> "):
-                line = line.strip()
-                if line:
-                    y_list.append(yaml.safe_load(line))
-        except Exception:
-            msg = f"\n\nFailed to parse prompt:\n{y}\nBad line:\n{line}\n"
-            logger.error(msg)
-            raise FailedToParsePromptError(msg)
-
-        messages = [
-            Message(
-                **{
-                    "role": list(item.keys())[0],
-                    "content": json.dumps(list(item.values())[0]),
-                }
-            )
-            for item in y_list
-        ]
+        y = yaml.safe_load(self.function.__doc__)
+        messages = []
+        for role_content in y:
+            role, content_template = list(role_content.items())[0]
+            if self.jinja:
+                template = Template(content_template, keep_trailing_newline=True)
+                content = template.render(**inputs)
+            else:
+                content = content_template.format(**inputs)
+            messages.append(Message(role=role, content=content))
         return messages
 
     def call_llm(self, messages: List[Message]):

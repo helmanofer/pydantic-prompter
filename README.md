@@ -36,18 +36,18 @@ def rank_recommendation_entries(
         json_entries, user_query
 ) -> RecommendationResults:
     """
-    >> system: You are a movie ranking expert
-    >> user: >
+    - system: You are a movie ranking expert
+    - user: >
         Which of the following JSON entries fit best to the query. 
         order by best fit descending
         Base your answer ONLY on the given JSON entries, 
         if you are not sure, or there are no entries
 
-    >> user: >
+    - user: >
         The JSON entries:
         {{ json_entries }}
 
-    >> user: "query: {{ user_query }}"
+    - user: "query: {{ user_query }}"
 
     """
 
