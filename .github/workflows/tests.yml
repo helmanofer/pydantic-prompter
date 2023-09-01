@@ -13,4 +13,4 @@ jobs:
           python-version: '3.10'
       - run: pip install pdm
       - run: pdm install
-      - run: pdm run pytest tests/sanity.py
+      - run: pdm run pytest

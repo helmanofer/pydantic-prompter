@@ -126,15 +126,23 @@ class _Pr:
         return "\n".join(map(str, msgs))
 
     def build_prompt(self, **inputs) -> List[Message]:
-        y = yaml.safe_load(self.function.__doc__)
+        if self.jinja:
+            template = Template(self.function.__doc__, keep_trailing_newline=True)
+            content = template.render(**inputs)
+        else:
+            content = self.function.__doc__.format(**inputs)
+
+        import re
+        pattern = r'\n\s*- '
+        parts = re.split(pattern, content)
+
         messages = []
-        for role_content in y:
-            role, content_template = list(role_content.items())[0]
-            if self.jinja:
-                template = Template(content_template, keep_trailing_newline=True)
-                content = template.render(**inputs)
-            else:
-                content = content_template.format(**inputs)
+        for content_part in parts:
+            if not content_part:
+                continue
+            content_part = content_part.strip()
+            content_part_dict = yaml.safe_load(content_part)
+            role, content = list(content_part_dict.items())[0]
             messages.append(Message(role=role, content=content))
         return messages
 
