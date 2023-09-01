@@ -1,6 +1,6 @@
 # Pydantic Prompter
 
-Documantation  
+Documentation https://helmanofer.github.io/pydantic-prompter
 
 ### Installation
 
