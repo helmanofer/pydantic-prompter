@@ -35,11 +35,13 @@ def test_anthropic_generic():
     ]
     res = aaa.build_prompt(name="Ofer")
     assert res == expected
-    if run_bedrock:
+    try:
         res: MyChildren = aaa(name="Ofer")
         assert isinstance(res, MyChildren)
         assert res.num_of_children == 3
         assert res.children_names == ["aa", "bb", "cc"]
+    except BedRockAuthenticationError:
+        print("\nSkipped actual run")
 
 
 def test_anthropic_non_yaml():
