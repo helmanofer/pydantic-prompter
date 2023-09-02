@@ -9,7 +9,7 @@ The library's API was inspired by [DeclarAI](https://github.com/vendi-ai/declara
 
 ## Usage
 ```
-`--8<-- "example1.py"
+--8<-- "example1.py"
 ```
 
 ## Best practices
