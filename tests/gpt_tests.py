@@ -32,7 +32,6 @@ def test_pydantic():
                 Message(role='user', content='hi, my name is Ofer and my children are called, aa, bb, cc'),
                 Message(role='user', content='what is my name and my children name')]
     res = bbb.build_prompt(name="Ofer")
-    res = bbb.build_string(name="Ofer")
     assert res == expected
 
     if run_gpt:

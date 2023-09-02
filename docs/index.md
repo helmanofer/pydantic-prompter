@@ -74,7 +74,7 @@ print(rank_recommendation_entries.build_string(json_entries=my_entries, user_que
 
 Explicitly state the parameter name you want to get, in this example, `title`
 
-```py
+```py hl_lines="2"
 class RecommendationTitleResponse(BaseModel):
     title: str = Field(description="4 to 6 words title")
 
@@ -94,7 +94,7 @@ def recommendation_title(json_entries) -> RecommendationTitleResponse:
 ```
 Don't do this
 
-```py hl_lines="1"
+```py hl_lines="2"
 class BaseResponse(BaseModel):
     text: str = Field(description="4 to 6 words text")
 
