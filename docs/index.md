@@ -94,10 +94,9 @@ def recommendation_title(json_entries) -> RecommendationTitleResponse:
 ```
 Don't do this
 
-```py
+```py hl_lines="1"
 class BaseResponse(BaseModel):
-    *text*: str = Field(description="4 to 6 words text")
-    ==text==: str = Field(description="4 to 6 words text")
+    text: str = Field(description="4 to 6 words text")
 
 
 @Prompter(llm="openai", jinja=True, model_name="gpt-3.5-turbo-16k")
