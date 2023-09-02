@@ -4,8 +4,8 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
-from pydatic_prompter import Prompter
-from pydatic_prompter.prompter import Message
+from pydantic_prompter import Prompter
+from pydantic_prompter.prompter import Message
 from tests.settings import Settings
 
 logging.basicConfig()

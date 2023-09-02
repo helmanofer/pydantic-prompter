@@ -1,5 +1,5 @@
 def test_basic():
-    from pydatic_prompter import Prompter
+    from pydantic_prompter import Prompter
     from pydantic import BaseModel
 
     class Hi(BaseModel):

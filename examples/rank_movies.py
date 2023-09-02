@@ -3,7 +3,7 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
-from pydatic_prompter import Prompter
+from pydantic_prompter import Prompter
 
 
 class RecommendedEntry(BaseModel):
