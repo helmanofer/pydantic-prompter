@@ -65,7 +65,7 @@ class OpenAI(LLM):
             "name": scheme["name"],
         }
         messages = self.to_openai_format(messages)
-        openai.api_key = os.getenv("OPENAI_API_KEY")
+        openai.api_key = settings.openai_api_key
         try:
             chat_completion = openai.ChatCompletion.create(
                 model=self.model_name,

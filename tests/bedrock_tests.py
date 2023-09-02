@@ -2,6 +2,7 @@ import logging
 import textwrap
 from typing import List
 
+import pytest
 from pydantic import BaseModel, Field
 
 from pydantic_prompter import Prompter
@@ -11,19 +12,21 @@ from pydantic_prompter.prompter import Message
 logging.basicConfig()
 
 
+class MyChildren(BaseModel):
+    num_of_children: int
+    children_names: List[str] = Field(description="The names of my children")
+
+
+@Prompter(llm="bedrock", model_name="anthropic.claude-instant-v1")
+def aaa(name) -> MyChildren:
+    """
+    - user: hi, my name is {name} and my children are called, aa, bb, cc
+    - user: |
+        how many children do I have and what's their names?
+    """
+
+
 def test_anthropic_generic():
-    class MyChildren(BaseModel):
-        num_of_children: int
-        children_names: List[str] = Field(description="The names of my children")
-
-    @Prompter(llm="bedrock", model_name="anthropic.claude-instant-v1")
-    def aaa(name) -> MyChildren:
-        """
-        - user: hi, my name is {name} and my children are called, aa, bb, cc
-        - user: |
-            how many children do I have and what's their names?
-        """
-
     expected = [
         Message(
             role="user",
@@ -35,34 +38,41 @@ def test_anthropic_generic():
     ]
     res = aaa.build_prompt(name="Ofer")
     assert res == expected
+
+
+def test_anthropic_generic_result():
     try:
         res: MyChildren = aaa(name="Ofer")
         assert isinstance(res, MyChildren)
         assert res.num_of_children == 3
         assert res.children_names == ["aa", "bb", "cc"]
     except BedRockAuthenticationError:
-        print("\nSkipped actual run")
+        pytest.skip("unsupported configuration")
+
+
+class QueryGPTResponse(BaseModel):
+    google_like_search_term: str
+
+
+@Prompter(llm="bedrock", model_name="anthropic.claude-instant-v1", jinja=True)
+def search_query(history) -> QueryGPTResponse:
+    """
+    {{ history }}
+
+    - user: |
+        Generate a Google-like search query text encompassing all previous chat questions and answers
+    """
+
+
+history = [
+    "- assistant: what genre do you want to watch?",
+    "- user: Comedy",
+    "- assistant: do you want a movie or series?",
+    "- user: Movie",
+]
 
 
 def test_anthropic_non_yaml():
-    class QueryGPTResponse(BaseModel):
-        google_like_search_term: str
-
-    @Prompter(llm="bedrock", model_name="anthropic.claude-instant-v1", jinja=True)
-    def search_query(history) -> QueryGPTResponse:
-        """
-        {{ history }}
-
-        - user: |
-            Generate a Google-like search query text encompassing all previous chat questions and answers
-        """
-
-    history = [
-        "- assistant: what genre do you want to watch?",
-        "- user: Comedy",
-        "- assistant: do you want a movie or series?",
-        "- user: Movie",
-    ]
     res = search_query.build_prompt(history="\n".join(history))
     expected = [
         Message(role="assistant", content="what genre do you want to watch?"),
@@ -96,8 +106,11 @@ Human: Generate a Google-like search query text encompassing all previous chat q
 Assistant:"""
     )
     assert qstr == qstr_expected
+
+
+def test_anthropic_non_yaml_result():
     try:
         res = search_query(history="\n".join(history))
         assert isinstance(res, QueryGPTResponse)
     except BedRockAuthenticationError:
-        print("\nSkipped actual run")
+        pytest.skip("unsupported configuration")
