@@ -99,8 +99,6 @@ class BedRockAnthropic(LLM):
         return content
 
     def call(self, messages: List[Message], scheme: dict) -> str:
-        import boto3
-
         content = self.build_prompt(messages, scheme)
 
         body = json.dumps(
@@ -113,6 +111,8 @@ class BedRockAnthropic(LLM):
         )
         logger.info(body)
         try:
+            import boto3
+
             session = boto3.Session(
                 profile_name=settings.aws_profile,
                 region_name=settings.aws_region,
