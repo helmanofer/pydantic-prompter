@@ -8,7 +8,7 @@ The library's API was inspired by [DeclarAI](https://github.com/vendi-ai/declara
 
 
 ## Usage
-```
+```py
 --8<-- "docs/example1.py"
 ```
 
