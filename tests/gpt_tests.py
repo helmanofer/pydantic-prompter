@@ -14,12 +14,11 @@ if run_gpt:
     os.environ["OPENAI_API_KEY"] = Settings().openai_api_key
 
 
-class Hey(BaseModel):
-    name: str = Field(description="the name")
-    children: List[str] = Field(description="list of my children")
-
-
 def test_pydantic():
+    class Hey(BaseModel):
+        name: str = Field(description="the name")
+        children: List[str] = Field(description="list of my children")
+
     @Prompter(jinja=True, llm="openai", model_name="gpt-3.5-turbo")
     def bbb(name) -> Hey:
         """
@@ -32,7 +31,8 @@ def test_pydantic():
     expected = [Message(role='system', content='you are a writer'),
                 Message(role='user', content='hi, my name is Ofer and my children are called, aa, bb, cc'),
                 Message(role='user', content='what is my name and my children name')]
-    res: Hey = bbb.build_prompt(name="Ofer")
+    res = bbb.build_prompt(name="Ofer")
+    res = bbb.build_string(name="Ofer")
     assert res == expected
 
     if run_gpt:
@@ -41,12 +41,11 @@ def test_pydantic():
         assert res.name == "Ofer"
 
 
-class MyChildren(BaseModel):
-    num_of_children: int
-    children_names: List[str]
-
-
 def test_generic():
+    class MyChildren(BaseModel):
+        num_of_children: int
+        children_names: List[str]
+
     @Prompter(llm="openai", model_name="gpt-3.5-turbo")
     def aaa(name) -> MyChildren:
         """

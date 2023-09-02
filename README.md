@@ -1,4 +1,5 @@
 # Pydantic Prompter
+A lightweight tool that lets you simply build prompts and get Pydantic objects as outputs 
 
 Documentation https://helmanofer.github.io/pydantic-prompter
 
@@ -6,12 +7,13 @@ Documentation https://helmanofer.github.io/pydantic-prompter
 
 `pip install pydantic-prompter`
 
-### setup
+### Setup
 
-`export OPENAI_API_KEY=<your openai token>
-`
+`export OPENAI_API_KEY=<your openai token>`
 
 ### Basic usage
+
+Create you output model with Pydantic
 
 ```py
 from pydantic_prompter import Prompter
@@ -31,12 +33,12 @@ class RecommendedEntry(BaseModel):
 class RecommendationResults(BaseModel):
     title: str
     entries: List[RecommendedEntry]
+```
 
-
+Create a Prompter function as a YML string
+```py
 @Prompter(llm="openai", jinja=True, model_name="gpt-3.5-turbo-16k")
-def rank_recommendation_entries(
-        json_entries, user_query
-) -> RecommendationResults:
+def rank_recommendation(entries, query) -> RecommendationResults:
     """
     - system: You are a movie ranking expert
     - user: >
@@ -47,14 +49,21 @@ def rank_recommendation_entries(
 
     - user: >
         The JSON entries:
-        {{ json_entries }}
+        {{ entries }}
 
-    - user: "query: {{ user_query }}"
+    - user: "query: {{ query }}"
 
     """
-
-
+```
+Run you function
+```py
 my_entries = "[{\"text\": \"Description: Four everyday suburban guys come together as a ...."
-print(rank_recommendation_entries(json_entries=my_entries, user_query="Romantic comedy"))
+print(rank_recommendation(entries=my_entries, query="Romantic comedy"))
 
 ```
+Debug your prompt
+```py
+print(rank_recommendation.build_string(entries=my_entries, query="Romantic comedy"))
+
+```
+See the [Documentation](https://helmanofer.github.io/pydantic-prompter) for more details

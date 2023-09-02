@@ -2,6 +2,7 @@ on:
   push:
     branches:
       - main
+      - docs*
 name: publish docs
 permissions:
   contents: write
