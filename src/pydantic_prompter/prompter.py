@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 from typing import Dict, List, Any
@@ -9,10 +8,10 @@ from openai.error import AuthenticationError
 from pydantic import BaseModel, ValidationError
 from retry import retry
 
-from pydatic_prompter.exceptions import (
+from pydantic_prompter.exceptions import (
     OpenAiAuthenticationError,
     Retryable,
-    FailedToCastLLMResult, NonRetryable, FailedToParsePromptError, )
+    FailedToCastLLMResult, NonRetryable, )
 
 logger = logging.getLogger()
 

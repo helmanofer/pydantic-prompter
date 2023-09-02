@@ -14,5 +14,12 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.betterem
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
 
 repo_url: https://github.com/helmanofer/pydantic-prompter
+site_url: https://pypi.org/project/pydantic-prompter
