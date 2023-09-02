@@ -2,7 +2,6 @@ import logging
 import os
 from typing import List
 import textwrap
-import boto3
 from pydantic import BaseModel, Field
 
 from pydantic_prompter import Prompter
@@ -16,6 +15,8 @@ if run_gpt:
 
 run_bedrock = True
 try:
+    import boto3
+
     session = boto3.Session(profile_name="okta_prod", region_name="us-east-1")
     client = session.client("bedrock")
 except:

@@ -4,7 +4,6 @@ import os
 import textwrap
 from typing import Dict, List, Any
 
-import boto3
 import yaml
 from jinja2 import Template
 from openai.error import AuthenticationError
@@ -111,6 +110,8 @@ Assistant:
         return content
 
     def call(self, messages: List[Message], scheme: dict) -> str:
+        import boto3
+
         content = self.build_prompt(messages, scheme)
 
         body = json.dumps(
