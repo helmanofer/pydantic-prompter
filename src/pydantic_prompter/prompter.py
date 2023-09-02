@@ -1,12 +1,10 @@
 import json
 import logging
 import os
-import textwrap
 from typing import Dict, List, Any
 
 import yaml
 from jinja2 import Template
-from openai.error import AuthenticationError
 from pydantic import BaseModel, ValidationError
 from retry import retry
 
@@ -15,9 +13,12 @@ from pydantic_prompter.exceptions import (
     Retryable,
     FailedToCastLLMResult,
     NonRetryable,
+    BedRockAuthenticationError,
 )
+from pydantic_prompter.settings import Settings
 
 logger = logging.getLogger()
+settings = Settings()
 
 
 class Message(BaseModel):
@@ -58,6 +59,7 @@ class OpenAI(LLM):
 
     def call(self, messages: List[Message], scheme: dict) -> str:
         import openai
+        from openai.error import AuthenticationError
 
         _function_call = {
             "name": scheme["name"],
@@ -89,20 +91,7 @@ class BedRockAnthropic(LLM):
         return "\n".join(output)
 
     def build_prompt(self, messages: List[Message], scheme: dict):
-        ant_template = textwrap.dedent(
-            """Human: You are a REST API that answers the question contained in <question> tags.
-Your response should be in the JSON which it's schema is specified in the <json> tags.
-
-<json>
-{{ schema }}
-</json>
-<question>
-{{ question }}
-</question>
-
-Assistant:
-"""
-        )
+        ant_template = open(settings.template_paths.anthropic).read()
         ant_scheme = json.dumps(scheme["parameters"]["properties"], indent=4)
         ant_msgs = self.to_anthropic_format(messages)
         template = Template(ant_template, keep_trailing_newline=True)
@@ -123,14 +112,21 @@ Assistant:
             }
         )
         logger.info(body)
-        session = boto3.Session(profile_name="okta_prod", region_name="us-east-1")
-        client = session.client("bedrock")
-        response = client.invoke_model(
-            body=body,
-            modelId="anthropic.claude-instant-v1",
-            accept="application/json",
-            contentType="application/json",
-        )
+        try:
+            session = boto3.Session(
+                profile_name=settings.aws_profile,
+                region_name=settings.aws_region,
+            )
+            client = session.client("bedrock")
+            response = client.invoke_model(
+                body=body,
+                modelId="anthropic.claude-instant-v1",
+                accept="application/json",
+                contentType="application/json",
+            )
+        except Exception as e:
+            raise BedRockAuthenticationError(e)
+
         response_body = json.loads(response.get("body").read().decode())
         logger.info(response_body)
         return response_body.get("completion")

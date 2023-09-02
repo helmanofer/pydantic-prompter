@@ -10,6 +10,10 @@ class OpenAiAuthenticationError(NonRetryable):
     pass
 
 
+class BedRockAuthenticationError(NonRetryable):
+    pass
+
+
 class FailedToParsePromptError(NonRetryable):
     pass
 
