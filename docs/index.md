@@ -1,32 +1,35 @@
 # Welcome to Pydantic Prompter
 
-This library helps you build prompts easily using Pydantic
+Pydantic Prompter is a lightweight tool designed for effortlessly constructing prompts and obtaining Pydantic objects as outputs.
 
-This library is using [OpenAi function calling API](https://platform.openai.com/docs/guides/gpt/function-calling)
+This library leverages the [OpenAi function calling API](https://platform.openai.com/docs/guides/gpt/function-calling) for its functionality.
 
-The library's API was inspired by [DeclarAI](https://github.com/vendi-ai/declarai)
+The design of the library's API draws inspiration from [DeclarAI](https://github.com/vendi-ai/declarai)
 
 
 ## Usage
 #### Basic usage
-using Jinja2 templates
+To utilize Pydantic Prompter with Jinja2 templates, follow the example below:
+
 ```py
 --8<-- "examples/rank_movies.py"
 ```
 #### Simple string formatting
-Injecting your conversation history using simple string formatting
+For injecting conversation history through straightforward string formatting, refer to this example:
+
 ```py
 --8<-- "examples/history_injection.py"
 ```
 #### Jinja2 advance usage
-Injecting your conversation history using Jinja2 loops
+For more advanced usage involving Jinja2 loops to inject conversation history, consider the following code snippet:
+
 ```py hl_lines="13-15"
 --8<-- "examples/history_injection_jinja.py"
 ```
 
 ## Best practices
 
-Explicitly state the parameter name you want to get, in this example, `title`
+When using Pydantic Prompter, it is recommended to explicitly specify the parameter name you wish to retrieve, as demonstrated in the example below, where title is explicitly mentioned:
 
 ```py hl_lines="2"
 class RecommendationTitleResponse(BaseModel):
@@ -46,7 +49,8 @@ def recommendation_title(json_entries) -> RecommendationTitleResponse:
     """
 
 ```
-Don't do this
+Avoid the following practice where the parameter name is not explicitly stated:
+
 
 ```py hl_lines="2"
 class BaseResponse(BaseModel):
@@ -60,3 +64,4 @@ def recommendation_title(json_entries) -> BaseResponse:
     """
 
 ```
+Adhering to these best practices will ensure clarity and precision when using Pydantic Prompter.
