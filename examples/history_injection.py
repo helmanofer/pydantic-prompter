@@ -13,7 +13,8 @@ def search_query(history) -> QueryGPTResponse:
     {history}
 
     - user: |
-        Generate a Google-like search query text encompassing all previous chat questions and answers
+        Generate a Google-like search query text
+        encompassing all previous chat questions and answers
     """
 
 
@@ -30,4 +31,5 @@ print(res)
 #     user: Comedy
 #     assistant: do you want a movie or series?
 #     user: Movie
-#     user: Generate a Google-like search query text encompassing all previous chat questions and answers
+#     user: Generate a Google-like search query text
+#     encompassing all previous chat questions and answers

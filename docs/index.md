@@ -8,17 +8,19 @@ The library's API was inspired by [DeclarAI](https://github.com/vendi-ai/declara
 
 
 ## Usage
-Basic usage, using Jinja2 templates
+#### Basic usage
+using Jinja2 templates
 ```py
 --8<-- "examples/rank_movies.py"
 ```
-
+#### Simple string formatting
 Injecting your conversation history using simple string formatting
 ```py
 --8<-- "examples/history_injection.py"
 ```
+#### Jinja2 advance usage
 Injecting your conversation history using Jinja2 loops
-```py
+```py hl_lines="13-15"
 --8<-- "examples/history_injection_jinja.py"
 ```
 
