@@ -23,7 +23,6 @@ openai = [
     "openai>=0.27.10",
 ]
 bedrock = [
-    "bedrock @ https://d2eo22ngex1n9g.cloudfront.net/Documentation/SDK/bedrock-python-sdk.zip",
 ]
 [build-system]
 requires = ["pdm-backend"]
