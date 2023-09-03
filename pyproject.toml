@@ -1,6 +1,6 @@
 [project]
 name = "pydantic-prompter"
-version = "0.1.12"
+version = "0.1.13"
 description = "Pydantic Prompter is a lightweight utility designed to facilitate the construction of prompts using YAML and generate Pydantic objects as outputs."
 authors = [
     { name = "Ofer Helman", email = "helmanofer@gmail.com" },
@@ -15,7 +15,6 @@ dependencies = [
     "pydantic<2.0.0",
 ]
 requires-python = ">=3.10"
-#readme = "README.md"
 license = { text = "MIT" }
 
 [project.optional-dependencies]
