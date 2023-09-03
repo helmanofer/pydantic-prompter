@@ -1,43 +1,15 @@
 import json
 from typing import List
 from pydantic import BaseModel, Field
-from pydantic_prompter import Prompter
 
 
-class MyChildren(BaseModel):
-    num_of_children: int
-    children_names: List[str] = Field(description="The names of my children")
-
-
-@Prompter(llm="bedrock", model_name="anthropic.claude-instant-v1")
-def aaa(name) -> MyChildren:
-    """
-    - user: hi, my name is {name} and my children are called, aa, bb, cc
-    - user: |
-        how many children do I have and what's their names?
-    """
+class Hey(BaseModel):
+    name: str = Field(description="the name")
+    children: List[str] = Field(description="list of my children")
 
 
 class QueryGPTResponse(BaseModel):
     google_like_search_term: str
-
-
-@Prompter(llm="bedrock", model_name="anthropic.claude-instant-v1", jinja=True)
-def search_query(history) -> QueryGPTResponse:
-    """
-    {{ history }}
-
-    - user: |
-        Generate a Google-like search query text encompassing all previous chat questions and answers
-    """
-
-
-history = [
-    "- assistant: what genre do you want to watch?",
-    "- user: Comedy",
-    "- assistant: do you want a movie or series?",
-    "- user: Movie",
-]
 
 
 class RecommendedEntry(BaseModel):
@@ -51,20 +23,9 @@ class RecommendationResults(BaseModel):
     entries: List[RecommendedEntry]
 
 
-@Prompter(llm="bedrock", jinja=True, model_name="anthropic.claude-instant-v1")
-def rank_recommendation(json_entries, query) -> RecommendationResults:
-    """
-    - user: >
-        Which of the following JSON entries fit best to the query. order by best fit descending
-        Base your answer ONLY on the given YML entries, if you are not sure, or there are no entries
-
-    - user: >
-        The JSON entries:
-        {{ json_entries }}
-
-    - user: Query - {{ query }}
-
-    """
+class MyChildren(BaseModel):
+    num_of_children: int
+    children_names: List[str] = Field(description="The names of my children")
 
 
 query = "Martial Arts, Action"
@@ -132,18 +93,3 @@ entries = json.dumps(
         },
     ]
 )
-
-
-class Hey(BaseModel):
-    name: str = Field(description="the name")
-    children: List[str] = Field(description="list of my children")
-
-
-@Prompter(jinja=True, llm="openai", model_name="gpt-3.5-turbo")
-def bbb(name) -> Hey:
-    """
-    - system: you are a writer
-    - user: hi, my name is {{ name }} and my children are called, aa, bb, cc
-    - user: |
-        what is my name and my children name
-    """

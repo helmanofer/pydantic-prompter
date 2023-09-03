@@ -1,5 +1,10 @@
+from tests.data_for_tests import *
+from typing import List
+
+from pydantic import BaseModel, Field
+
+from pydantic_prompter import Prompter
 from pydantic_prompter.prompter import Message
-from tests.prompts_for_tests import *
 
 
 def test_basic():
@@ -19,6 +24,15 @@ def test_basic():
 
 
 def test_pydantic():
+    @Prompter(jinja=True, llm="openai", model_name="gpt-3.5-turbo")
+    def bbb(name) -> Hey:
+        """
+        - system: you are a writer
+        - user: hi, my name is {{ name }} and my children are called, aa, bb, cc
+        - user: |
+            what is my name and my children name
+        """
+
     expected = [
         Message(role="system", content="you are a writer"),
         Message(
@@ -32,6 +46,14 @@ def test_pydantic():
 
 
 def test_generic():
+    @Prompter(llm="openai", model_name="dc")
+    def aaa(name) -> MyChildren:
+        """
+        - user: hi, my name is {name} and my children are called, aa, bb, cc
+        - user: |
+            how many children do I have and what's their names?
+        """
+
     expected = [
         Message(
             role="user",
@@ -46,6 +68,21 @@ def test_generic():
 
 
 def test_non_yaml():
+    @Prompter(llm="openai", model_name="dontcare", jinja=True)
+    def search_query(history) -> QueryGPTResponse:
+        """
+        {{ history }}
+
+        - user: |
+            Generate a Google-like search query text encompassing all previous chat questions and answers
+        """
+
+    history = [
+        "- assistant: what genre do you want to watch?",
+        "- user: Comedy",
+        "- assistant: do you want a movie or series?",
+        "- user: Movie",
+    ]
     res = search_query.build_prompt(history="\n".join(history))
     expected = [
         Message(role="assistant", content="what genre do you want to watch?"),
@@ -62,6 +99,21 @@ def test_non_yaml():
 
 
 def test_complex_question():
+    @Prompter(llm="openai", jinja=True, model_name="dc")
+    def rank_recommendation(json_entries, query) -> RecommendationResults:
+        """
+        - user: >
+            Which of the following JSON entries fit best to the query. order by best fit descending
+            Base your answer ONLY on the given YML entries, if you are not sure, or there are no entries
+
+        - user: >
+            The JSON entries:
+            {{ json_entries }}
+
+        - user: Query - {{ query }}
+
+        """
+
     expected = [
         Message(
             role="user",
