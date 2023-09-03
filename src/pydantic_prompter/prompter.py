@@ -92,7 +92,7 @@ class BedRockAnthropic(LLM):
 
     def build_prompt(self, messages: List[Message], scheme: dict):
         ant_template = open(settings.template_paths.anthropic).read()
-        ant_scheme = json.dumps(scheme["parameters"]["properties"], indent=4)
+        ant_scheme = json.dumps(scheme["parameters"], indent=4)
         ant_msgs = self.to_anthropic_format(messages)
         template = Template(ant_template, keep_trailing_newline=True)
         content = template.render(schema=ant_scheme, question=ant_msgs).strip()
@@ -120,7 +120,7 @@ class BedRockAnthropic(LLM):
             client = session.client("bedrock")
             response = client.invoke_model(
                 body=body,
-                modelId="anthropic.claude-instant-v1",
+                modelId=self.model_name,
                 accept="application/json",
                 contentType="application/json",
             )
