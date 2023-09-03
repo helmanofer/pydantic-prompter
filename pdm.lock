@@ -6,7 +6,7 @@ groups = ["default", "openai", "test", "lint", "docs", "bedrock"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:f6c0007e74b971eb7ee71a0a6b04353f000b878c716289a722b50a467d33b68e"
+content_hash = "sha256:b4aaa68b86fcfa58d926dac524faee29c5ba6b6814a7b2e8aaf45094c313a20f"
 
 [[package]]
 name = "aiohttp"
@@ -110,15 +110,6 @@ dependencies = [
 files = [
     {file = "beautifulsoup4-4.12.2-py3-none-any.whl", hash = "sha256:bd2520ca0d9d7d12694a53d44ac482d181b4ec1888909b035a3dbf40d0f57d4a"},
     {file = "beautifulsoup4-4.12.2.tar.gz", hash = "sha256:492bbc69dca35d12daac71c4db1bfff0c876c00ef4a2ffacce226d4638eb72da"},
-]
-
-[[package]]
-name = "bedrock"
-version = "0.0.0"
-url = "https://d2eo22ngex1n9g.cloudfront.net/Documentation/SDK/bedrock-python-sdk.zip"
-summary = ""
-files = [
-    {file = "bedrock-python-sdk.zip", hash = "sha256:cc0a400796a564a89caf78d801128c7a3eac5bb7239511247bfbf026fd9786c8"},
 ]
 
 [[package]]

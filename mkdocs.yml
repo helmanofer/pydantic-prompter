@@ -1,6 +1,7 @@
 site_name: Pydantic Prompter Docs
 nav:
   - Home: index.md
+  - AI services: ai_services.md
 theme:
   name: material
   features:
