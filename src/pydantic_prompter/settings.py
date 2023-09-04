@@ -13,7 +13,7 @@ class TemplatePaths(BaseModel):
 class Settings(BaseSettings):
     openai_api_key: str = ""
     template_paths: TemplatePaths = TemplatePaths()
-    aws_region: str = "us-east-1"
+    aws_default_region: str = "us-east-1"
     aws_profile: str = None
 
     class Config:

@@ -1,3 +1,5 @@
+import logging
+
 from tests.data_for_tests import *
 from typing import List
 
@@ -10,6 +12,11 @@ from pydantic_prompter.prompter import Message
 def test_basic():
     from pydantic_prompter import Prompter
     from pydantic import BaseModel
+
+    logging.getLogger("pydantic_prompter").setLevel(logging.DEBUG)
+    logging.basicConfig(
+        level=logging.DEBUG,
+    )
 
     class Hi(BaseModel):
         response: str
