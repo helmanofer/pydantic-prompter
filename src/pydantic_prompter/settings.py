@@ -1,13 +1,14 @@
 from pathlib import Path
 
-from pydantic import BaseSettings, BaseModel
-
+from pydantic import BaseSettings, BaseModel, Field
 
 _root_path = Path(__file__).resolve().parent
 
 
 class TemplatePaths(BaseModel):
-    anthropic = _root_path.joinpath("prompt_templates", "anthropic.jinja").as_posix()
+    anthropic: str = Field(
+        default=_root_path.joinpath("prompt_templates", "anthropic.jinja").as_posix()
+    )
 
 
 class Settings(BaseSettings):
@@ -18,3 +19,4 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = _root_path.joinpath(".env")
+        env_nested_delimiter = "__"
