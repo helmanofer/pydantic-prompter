@@ -25,7 +25,7 @@ class _Pr:
     def __call__(self, **inputs):
         try:
             msgs = self.build_prompt(**inputs)
-            logger.debug(f"Calling with prompt: \n {self.build_string(**inputs)}")
+            logger.debug(f"Calling with prompt:\n{self.build_string(**inputs)}")
             return self.call_llm(msgs)
         except (OpenAiAuthenticationError, NonRetryable):
             raise
@@ -64,7 +64,7 @@ class _Pr:
         return_scheme_llm_str = self.parser.llm_schema()
 
         ret_str = self.llm.call(messages, return_scheme_llm_str)
-        logger.debug(f"Response from llm: \n {ret_str}")
+        logger.debug(f"Response from llm: \n{ret_str}")
         return self.parser.cast_result(ret_str)
 
 

@@ -3,7 +3,7 @@ from typing import Dict, List
 
 from jinja2 import Template
 
-from pydantic_prompter.common import Message, logger, settings
+from pydantic_prompter.common import Message, logger
 from pydantic_prompter.exceptions import (
     OpenAiAuthenticationError,
     BedRockAuthenticationError,
@@ -12,6 +12,9 @@ from pydantic_prompter.exceptions import (
 
 class LLM:
     def __init__(self, model_name):
+        from pydantic_prompter.settings import Settings
+
+        self.settings = Settings()
         self.model_name = model_name
 
     def debug_prompt(self, messages: List[Message], scheme: dict):
@@ -54,7 +57,7 @@ class OpenAI(LLM):
         logger.debug(f"Openai Functions: \n [{scheme}]")
         logger.debug(f"Openai function_call: \n {_function_call}")
         messages = self.to_openai_format(messages)
-        openai.api_key = settings.openai_api_key
+        openai.api_key = self.settings.openai_api_key
         try:
             chat_completion = openai.ChatCompletion.create(
                 model=self.model_name,
@@ -80,7 +83,10 @@ class BedRockAnthropic(LLM):
         return "\n".join(output)
 
     def build_prompt(self, messages: List[Message], scheme: dict):
-        ant_template = open(settings.template_paths.anthropic).read()
+        pfp = self.settings.template_paths.anthropic
+        if "prompt_templates" not in pfp:
+            logger.info(f"Using custom prompt from {pfp}")
+        ant_template = open(pfp).read()
         ant_scheme = json.dumps(scheme["parameters"], indent=4)
         ant_msgs = self.to_anthropic_format(messages)
         template = Template(ant_template, keep_trailing_newline=True)
@@ -103,8 +109,8 @@ class BedRockAnthropic(LLM):
             import boto3
 
             session = boto3.Session(
-                profile_name=settings.aws_profile,
-                region_name=settings.aws_default_region,
+                profile_name=self.settings.aws_profile,
+                region_name=self.settings.aws_default_region,
             )
             client = session.client("bedrock")
             response = client.invoke_model(

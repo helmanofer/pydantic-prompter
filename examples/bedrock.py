@@ -1,6 +1,12 @@
+import os
 from pydantic_prompter import Prompter
 from pydantic import BaseModel, Field
 from typing import List
+
+os.environ["AWS_DEFAULT_REGION"] = "us-east-1"
+os.environ["AWS_ACCESS_KEY_ID"] = "..."
+os.environ["AWS_SECRET_ACCESS_KEY"] = "..."
+os.environ["AWS_SESSION_TOKEN"] = "..."
 
 
 class MyChildren(BaseModel):
@@ -8,7 +14,7 @@ class MyChildren(BaseModel):
     children_names: List[str] = Field(description="The names of my children")
 
 
-@Prompter(llm="bedrock", model_name="anthropic.claude-instant-v1")
+@Prompter(llm="bedrock", model_name="anthropic.claude-v1")
 def me_and_mu_children(name) -> MyChildren:
     """
     - user: hi, my name is {name} and my children are called, aa, bb, cc
@@ -17,4 +23,4 @@ def me_and_mu_children(name) -> MyChildren:
     """
 
 
-print(me_and_mu_children("Ofer"))
+print(me_and_mu_children(name="Ofer"))
