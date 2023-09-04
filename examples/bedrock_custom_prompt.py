@@ -28,13 +28,13 @@ def me_and_mu_children(name) -> MyChildren:
 
 print(me_and_mu_children(name="Ofer"))
 
-# DEBUG:pydantic_prompter:Using bedrock provider
-# DEBUG:pydantic_prompter:Using BedRockAnthropic provider with model anthropic.claude-v1
-# DEBUG:pydantic_prompter:Using PydanticParser
-# INFO:pydantic_prompter:Using custom prompt from ./anthropic_custom.jinja
-# DEBUG:pydantic_prompter:Calling with prompt:
-#  Human: You are a REST API that answers the question contained in <qq> tags.
-# Your response should be in a JSON format which it's schema is specified in the ...
+# >>> DEBUG:pydantic_prompter:Using bedrock provider
+#     DEBUG:pydantic_prompter:Using BedRockAnthropic provider with model anthropic.claude-v1
+#     DEBUG:pydantic_prompter:Using PydanticParser
+#     INFO:pydantic_prompter:Using custom prompt from ./anthropic_custom.jinja
+#     DEBUG:pydantic_prompter:Calling with prompt:
+#      Human: You are a REST API that answers the question contained in <qq> tags.
+#     Your response should be in a JSON format which it's schema is specified in the ...
 #
-# <json>
-# {
+#     <json>
+#     {
