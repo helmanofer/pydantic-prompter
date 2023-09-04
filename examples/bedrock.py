@@ -1,4 +1,3 @@
-import os
 from pydantic_prompter import Prompter
 from pydantic import BaseModel, Field
 from typing import List

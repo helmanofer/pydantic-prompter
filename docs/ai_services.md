@@ -8,6 +8,7 @@ pip install https://d2eo22ngex1n9g.cloudfront.net/Documentation/SDK/bedrock-pyth
 
 setup your AWS [creds](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html) 
 
+
 ```bash
 export AWS_ACCESS_KEY_ID=...
 export AWS_SECRET_ACCESS_KEY=.....
