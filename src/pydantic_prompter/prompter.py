@@ -17,7 +17,9 @@ from pydantic_prompter.exceptions import (
 )
 from pydantic_prompter.settings import Settings
 
-logger = logging.getLogger()
+logger = logging.getLogger("pydantic_prompter")
+logger.addHandler(logging.NullHandler())
+
 settings = Settings()
 
 
@@ -42,10 +44,16 @@ class LLM:
     @classmethod
     def get_llm(cls, llm: str, model_name: str):
         if llm == "openai":
-            return OpenAI(model_name)
+            llm_inst = OpenAI(model_name)
         elif llm == "bedrock" and model_name.startswith("anthropic"):
-            return BedRockAnthropic(model_name)
-        raise Exception(f"Model not implemented {llm}, {model_name}")
+            logger.debug("Using bedrock provider")
+            llm_inst = BedRockAnthropic(model_name)
+        else:
+            raise Exception(f"Model not implemented {llm}, {model_name}")
+        logger.debug(
+            f"Using {llm_inst.__class__.__name__} provider with model {model_name}"
+        )
+        return llm_inst
 
 
 class OpenAI(LLM):
@@ -64,6 +72,8 @@ class OpenAI(LLM):
         _function_call = {
             "name": scheme["name"],
         }
+        logger.debug(f"Openai Functions: \n [{scheme}]")
+        logger.debug(f"Openai function_call: \n {_function_call}")
         messages = self.to_openai_format(messages)
         openai.api_key = settings.openai_api_key
         try:
@@ -109,13 +119,13 @@ class BedRockAnthropic(LLM):
                 "temperature": 0.7,
             }
         )
-        logger.info(body)
+        logger.debug(f"Request body: \n{body}")
         try:
             import boto3
 
             session = boto3.Session(
                 profile_name=settings.aws_profile,
-                region_name=settings.aws_region,
+                region_name=settings.aws_default_region,
             )
             client = session.client("bedrock")
             response = client.invoke_model(
@@ -140,6 +150,7 @@ class AnnotationParser:
         return_obj = function.__annotations__.get("return", None)
 
         if isinstance(return_obj, ModelMetaclass):
+            logger.debug("Using PydanticParser")
             return PydanticParser(function)
         else:
             raise Exception("Please make sure you annotate return type using Pydantic")
@@ -187,6 +198,7 @@ class _Pr:
     def __call__(self, **inputs):
         try:
             msgs = self.build_prompt(**inputs)
+            logger.debug(f"Calling with prompt: \n {self.build_string(**inputs)}")
             return self.call_llm(msgs)
         except (OpenAiAuthenticationError, NonRetryable):
             raise
@@ -196,7 +208,8 @@ class _Pr:
 
     def build_string(self, **inputs):
         msgs = self.build_prompt(**inputs)
-        return self.llm.debug_prompt(msgs, self.parser.llm_schema())
+        res = self.llm.debug_prompt(msgs, self.parser.llm_schema())
+        return res
 
     def build_prompt(self, **inputs) -> List[Message]:
         if self.jinja:
@@ -224,6 +237,7 @@ class _Pr:
         return_scheme_llm_str = self.parser.llm_schema()
 
         ret_str = self.llm.call(messages, return_scheme_llm_str)
+        logger.debug(f"Response from llm: \n {ret_str}")
         return self.parser.cast_result(ret_str)
 
 

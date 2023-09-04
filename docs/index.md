@@ -65,3 +65,26 @@ def recommendation_title(json_entries) -> BaseResponse:
 
 ```
 Adhering to these best practices will ensure clarity and precision when using Pydantic Prompter.
+
+## Debugging and logging
+
+You can view info and/or debugging logging using the following snippet:
+
+```py
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logging.getLogger("pydantic_prompter").setLevel(logging.DEBUG)
+```
+Resulting
+```console
+DEBUG:pydantic_prompter:Using OpenAI provider with model gpt-3.5-turbo
+DEBUG:pydantic_prompter:Using PydanticParser
+DEBUG:pydantic_prompter:Calling with prompt: 
+ {'role': 'user', 'content': 'say hi'}
+DEBUG:pydantic_prompter:Response from llm: 
+ {
+  "response": "Hi there!"
+ }
+```
+
