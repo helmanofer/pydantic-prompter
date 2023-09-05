@@ -15,7 +15,12 @@ logging.basicConfig()
 
 @pytest.mark.parametrize(
     "llm,model",
-    [("openai", "gpt-3.5-turbo"), ("bedrock", "anthropic.claude-instant-v1")],
+    [
+        ("openai", "gpt-3.5-turbo"),
+        ("bedrock", "anthropic.claude-instant-v1"),
+        ("bedrock", "anthropic.claude-v1"),
+        ("bedrock", "anthropic.claude-v2"),
+    ],
 )
 def test_pydantic_result(llm, model):
     @Prompter(jinja=True, llm=llm, model_name=model)
@@ -37,7 +42,12 @@ def test_pydantic_result(llm, model):
 
 @pytest.mark.parametrize(
     "llm,model",
-    [("openai", "gpt-3.5-turbo"), ("bedrock", "anthropic.claude-instant-v1")],
+    [
+        ("openai", "gpt-3.5-turbo"),
+        ("bedrock", "anthropic.claude-instant-v1"),
+        ("bedrock", "anthropic.claude-v1"),
+        ("bedrock", "anthropic.claude-v2"),
+    ],
 )
 def test_generic_result(llm, model):
     @Prompter(llm=llm, model_name=model)
@@ -60,7 +70,12 @@ def test_generic_result(llm, model):
 
 @pytest.mark.parametrize(
     "llm,model",
-    [("openai", "gpt-3.5-turbo"), ("bedrock", "anthropic.claude-instant-v1")],
+    [
+        ("openai", "gpt-3.5-turbo"),
+        ("bedrock", "anthropic.claude-instant-v1"),
+        ("bedrock", "anthropic.claude-v1"),
+        ("bedrock", "anthropic.claude-v2"),
+    ],
 )
 def test_non_yaml_result(llm, model):
     @Prompter(llm=llm, model_name=model, jinja=True)
@@ -88,7 +103,12 @@ def test_non_yaml_result(llm, model):
 
 @pytest.mark.parametrize(
     "llm,model",
-    [("openai", "gpt-3.5-turbo"), ("bedrock", "anthropic.claude-instant-v1")],
+    [
+        ("openai", "gpt-3.5-turbo"),
+        ("bedrock", "anthropic.claude-instant-v1"),
+        ("bedrock", "anthropic.claude-v1"),
+        ("bedrock", "anthropic.claude-v2"),
+    ],
 )
 def test_complex_question_result(llm, model):
     @Prompter(llm=llm, jinja=True, model_name=model)

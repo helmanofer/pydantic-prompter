@@ -1,11 +1,14 @@
 Human: You are a REST API that answers the question contained in <question> tags.
-Your response should be in a JSON format which it's schema is specified in the <json> tags. DO NOT add any text other than the JSON to the response. DO NOT add <json></json> tags to the response
+Your response should be in a JSON format which it's schema is specified in the <json> tags.
 
 <json>
 {{ schema }}
 </json>
-<question>
+
+Assistant: OK
+
+Human:
 {{ question }}
-</question>
 
 Assistant:
+<json>

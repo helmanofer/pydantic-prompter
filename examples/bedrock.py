@@ -1,6 +1,7 @@
 from pydantic_prompter import Prompter
 from pydantic import BaseModel, Field
 from typing import List
+import os
 
 os.environ["AWS_DEFAULT_REGION"] = "us-east-1"
 os.environ["AWS_ACCESS_KEY_ID"] = "..."
