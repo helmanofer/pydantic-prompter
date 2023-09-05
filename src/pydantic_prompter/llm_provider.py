@@ -124,4 +124,4 @@ class BedRockAnthropic(LLM):
 
         response_body = json.loads(response.get("body").read().decode())
         logger.info(response_body)
-        return response_body.get("completion")
+        return response_body.get("completion").replace("</json>", "")
