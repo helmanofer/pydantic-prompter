@@ -129,7 +129,9 @@ class BedRockAnthropic(LLM):
         except Exception as e:
             raise BedRockAuthenticationError(e)
 
-        body = self._strip_wrapping_garbage(response.get("body").read().decode())
-        response_body = json.loads(body)
+        response_body = json.loads(response.get("body").read().decode())
         logger.info(response_body)
-        return response_body.get("completion").replace("</json>", "")
+        res = self._strip_wrapping_garbage(
+            response_body.get("completion").replace("</json>", "")
+        )
+        return res
