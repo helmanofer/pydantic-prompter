@@ -93,6 +93,13 @@ class BedRockAnthropic(LLM):
         content = template.render(schema=ant_scheme, question=ant_msgs).strip()
         return content
 
+    @staticmethod
+    def _strip_wrapping_garbage(body: str):
+        left = body.find("{")
+        right = body.rfind("}")
+        j = body[left : right + 1]
+        return j
+
     def call(self, messages: List[Message], scheme: dict) -> str:
         content = self.build_prompt(messages, scheme)
 
@@ -122,6 +129,7 @@ class BedRockAnthropic(LLM):
         except Exception as e:
             raise BedRockAuthenticationError(e)
 
-        response_body = json.loads(response.get("body").read().decode())
+        body = self._strip_wrapping_garbage(response.get("body").read().decode())
+        response_body = json.loads(body)
         logger.info(response_body)
         return response_body.get("completion").replace("</json>", "")
