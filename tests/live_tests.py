@@ -1,5 +1,4 @@
 import logging
-from pprint import pprint
 
 import pytest
 
@@ -10,7 +9,8 @@ from pydantic_prompter.exceptions import (
 )
 from tests.data_for_tests import *
 
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger()
 
 
 @pytest.mark.parametrize(
@@ -27,8 +27,8 @@ def test_pydantic_result(llm, model):
     def bbb(name) -> Hey:
         """
         - system: you are a writer
-        - user: hi, my name is {{ name }} and my children are called, aa, bb, cc
-        - user: |
+        - user: >
+            hi, my name is {{ name }} and my children are called, aa, bb, cc
             what is my name and my children name
         """
 
@@ -53,18 +53,18 @@ def test_generic_result(llm, model):
     @Prompter(llm=llm, model_name=model)
     def aaa(name) -> MyChildren:
         """
-        - user: hi, my name is {name} and my children are called, aa, bb, cc
-        - user: |
+        - user: >
+            hi, my name is {name} and my children are called, aa, bb, cc
             how many children do I have and what's their names?
         """
 
     try:
         res: MyChildren = aaa(name="Ofer")
-        pprint(res)
         assert isinstance(res, MyChildren)
         assert res.num_of_children == 3
         assert res.children_names == ["aa", "bb", "cc"]
-    except (OpenAiAuthenticationError, BedRockAuthenticationError):
+    except (OpenAiAuthenticationError, BedRockAuthenticationError) as e:
+        logger.warning(e)
         pytest.skip("unsupported configuration")
 
 
@@ -97,7 +97,8 @@ def test_non_yaml_result(llm, model):
     try:
         res = search_query(history="\n".join(history))
         assert isinstance(res, QueryGPTResponse)
-    except (OpenAiAuthenticationError, BedRockAuthenticationError):
+    except (OpenAiAuthenticationError, BedRockAuthenticationError) as e:
+        logger.warning(e)
         pytest.skip("unsupported configuration")
 
 
@@ -118,17 +119,16 @@ def test_complex_question_result(llm, model):
             Which of the following JSON entries fit best to the query. order by best fit descending
             Base your answer ONLY on the given YML entries, if you are not sure, or there are no entries
 
-        - user: >
             The JSON entries:
             {{ json_entries }}
 
-        - user: Query - {{ query }}
+            Query - {{ query }}
 
         """
 
     try:
         res = rank_recommendation(json_entries=entries, query=query)
         assert isinstance(res, RecommendationResults)
-        pprint(res)
-    except (OpenAiAuthenticationError, BedRockAuthenticationError):
+    except (OpenAiAuthenticationError, BedRockAuthenticationError) as e:
+        logger.warning(e)
         pytest.skip("unsupported configuration")

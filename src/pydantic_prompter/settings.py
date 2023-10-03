@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     template_paths: TemplatePaths = TemplatePaths()
     aws_default_region: str = "us-east-1"
     aws_profile: str = None
+    aws_access_key_id: str = ""
+    aws_secret_access_key: str = ""
 
     class Config:
         env_file = _root_path.joinpath(".env")

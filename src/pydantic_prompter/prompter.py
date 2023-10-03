@@ -32,6 +32,11 @@ class _Pr:
         except Retryable:
             logger.error(f"\n\nPrompt:\n\n{self.build_string(**inputs)}")
             raise
+        except Exception as e:
+            logger.error(
+                f"\n\nUnknown Error\n\nPrompt:\n\n{self.build_string(**inputs)}"
+            )
+            raise
 
     def build_string(self, **inputs):
         msgs = self.build_prompt(**inputs)

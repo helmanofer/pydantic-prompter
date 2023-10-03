@@ -51,6 +51,12 @@ docs = [
 testpaths = [
     "tests/*",
 ]
+log_level = "INFO"
+log_format = "%(asctime)s %(levelname)s %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+log_cli = true
+log_cli_level = "INFO"
+
 
 [project.urls]
 Source = "https://github.com/helmanofer/pydantic-prompter"
