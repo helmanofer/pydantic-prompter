@@ -1,3 +1,5 @@
+import json
+from json import JSONDecodeError
 from typing import Dict, Any
 
 from pydantic import ValidationError
@@ -46,8 +48,9 @@ class PydanticParser(AnnotationParser):
 
     def cast_result(self, result: str):
         try:
-            return self.return_cls.parse_raw(result)
-        except ValidationError:
+            j = json.loads(result, strict=False)
+            return self.return_cls(**j)
+        except (ValidationError, JSONDecodeError):
             raise FailedToCastLLMResult(
                 f"\n\nFailed to validate JSON: \n\n{result}\n\n"
             )

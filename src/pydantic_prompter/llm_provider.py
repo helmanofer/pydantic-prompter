@@ -1,4 +1,6 @@
 import json
+import os
+import random
 from typing import Dict, List
 
 from jinja2 import Template
@@ -64,6 +66,7 @@ class OpenAI(LLM):
                 messages=messages,
                 functions=[scheme],
                 function_call=_function_call,
+                temperature=random.uniform(0.3, 1.3),
             )
         except AuthenticationError as e:
             raise OpenAiAuthenticationError(e)
@@ -108,12 +111,15 @@ class BedRockAnthropic(LLM):
                 "max_tokens_to_sample": 200,
                 "prompt": content,
                 "stop_sequences": ["Human:"],
-                "temperature": 0.7,
+                "temperature": random.uniform(0, 1),
             }
         )
         logger.debug(f"Request body: \n{body}")
         try:
             import boto3
+
+            os.environ["AWS_ACCESS_KEY_ID"] = self.settings.aws_access_key_id
+            os.environ["AWS_SECRET_ACCESS_KEY"] = self.settings.aws_secret_access_key
 
             session = boto3.Session(
                 profile_name=self.settings.aws_profile,
