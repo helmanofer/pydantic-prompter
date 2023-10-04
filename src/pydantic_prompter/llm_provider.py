@@ -108,7 +108,7 @@ class BedRockAnthropic(LLM):
 
         body = json.dumps(
             {
-                "max_tokens_to_sample": 200,
+                "max_tokens_to_sample": 8000,
                 "prompt": content,
                 "stop_sequences": ["Human:"],
                 "temperature": random.uniform(0, 1),
