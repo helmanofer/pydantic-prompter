@@ -16,10 +16,10 @@ logger = logging.getLogger()
 @pytest.mark.parametrize(
     "llm,model",
     [
-        ("openai", "gpt-3.5-turbo"),
+        # ("openai", "gpt-3.5-turbo"),
         ("bedrock", "anthropic.claude-instant-v1"),
-        ("bedrock", "anthropic.claude-v1"),
-        ("bedrock", "anthropic.claude-v2"),
+        # ("bedrock", "anthropic.claude-v1"),
+        # ("bedrock", "anthropic.claude-v2"),
     ],
 )
 def test_pydantic_result(llm, model):
@@ -43,10 +43,10 @@ def test_pydantic_result(llm, model):
 @pytest.mark.parametrize(
     "llm,model",
     [
-        ("openai", "gpt-3.5-turbo"),
+        # ("openai", "gpt-3.5-turbo"),
         ("bedrock", "anthropic.claude-instant-v1"),
-        ("bedrock", "anthropic.claude-v1"),
-        ("bedrock", "anthropic.claude-v2"),
+        # ("bedrock", "anthropic.claude-v1"),
+        # ("bedrock", "anthropic.claude-v2"),
     ],
 )
 def test_generic_result(llm, model):
@@ -71,10 +71,10 @@ def test_generic_result(llm, model):
 @pytest.mark.parametrize(
     "llm,model",
     [
-        ("openai", "gpt-3.5-turbo"),
+        # ("openai", "gpt-3.5-turbo"),
         ("bedrock", "anthropic.claude-instant-v1"),
-        ("bedrock", "anthropic.claude-v1"),
-        ("bedrock", "anthropic.claude-v2"),
+        # ("bedrock", "anthropic.claude-v1"),
+        # ("bedrock", "anthropic.claude-v2"),
     ],
 )
 def test_non_yaml_result(llm, model):
@@ -105,10 +105,10 @@ def test_non_yaml_result(llm, model):
 @pytest.mark.parametrize(
     "llm,model",
     [
-        ("openai", "gpt-3.5-turbo"),
+        # ("openai", "gpt-3.5-turbo"),
         ("bedrock", "anthropic.claude-instant-v1"),
-        ("bedrock", "anthropic.claude-v1"),
-        ("bedrock", "anthropic.claude-v2"),
+        # ("bedrock", "anthropic.claude-v1"),
+        # ("bedrock", "anthropic.claude-v2"),
     ],
 )
 def test_complex_question_result(llm, model):

@@ -58,12 +58,12 @@ class OpenAI(LLM):
         }
         logger.debug(f"Openai Functions: \n [{scheme}]")
         logger.debug(f"Openai function_call: \n {_function_call}")
-        messages = self.to_openai_format(messages)
+        messages_oai = self.to_openai_format(messages)
         openai.api_key = self.settings.openai_api_key
         try:
             chat_completion = openai.ChatCompletion.create(
                 model=self.model_name,
-                messages=messages,
+                messages=messages_oai,
                 functions=[scheme],
                 function_call=_function_call,
                 temperature=random.uniform(0.3, 1.3),

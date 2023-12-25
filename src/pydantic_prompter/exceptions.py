@@ -18,5 +18,8 @@ class FailedToParsePromptError(NonRetryable):
     pass
 
 
+class BadRoleError(NonRetryable):
+    pass
+
 class FailedToCastLLMResult(Retryable):
     pass
