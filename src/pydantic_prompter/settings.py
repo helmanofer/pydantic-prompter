@@ -9,6 +9,12 @@ class TemplatePaths(BaseModel):
     anthropic: str = Field(
         default=_root_path.joinpath("prompt_templates", "anthropic.jinja").as_posix()
     )
+    cohere: str = Field(
+        default=_root_path.joinpath("prompt_templates", "cohere.jinja").as_posix()
+    )
+    llama2: str = Field(
+        default=_root_path.joinpath("prompt_templates", "llama2.jinja").as_posix()
+    )
 
 
 class Settings(BaseSettings):
