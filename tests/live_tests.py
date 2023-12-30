@@ -57,37 +57,6 @@ def test_pydantic_result(llm, model):
         ("bedrock", "anthropic.claude-v2"),
     ],
 )
-# def test_generic_result(llm, model):
-#     @Prompter(llm=llm, model_name=model)
-#     def aaa(name) -> MyChildren:
-#         """
-#         - user:
-#             hi, my name is {name} and my children are called, aa, bb, cc
-#             how many children do I have and what's their names?
-#         """
-#
-#     try:
-#         res: MyChildren = aaa(name="Ofer")
-#         assert isinstance(res, MyChildren)
-#         assert res.num_of_children == 3
-#         assert res.children_names == ["aa", "bb", "cc"]
-#     except (OpenAiAuthenticationError, BedRockAuthenticationError) as e:
-#         logger.warning(e)
-#         pytest.skip("unsupported configuration")
-
-
-@pytest.mark.parametrize(
-    "llm,model",
-    [
-        ("bedrock", "meta.llama2-70b-chat-v1"),
-        ("bedrock", "meta.llama2-13b-chat-v1"),
-        ("bedrock", "cohere.command-text-v14"),
-        ("openai", "gpt-3.5-turbo"),
-        ("bedrock", "anthropic.claude-instant-v1"),
-        ("bedrock", "anthropic.claude-v1"),
-        ("bedrock", "anthropic.claude-v2"),
-    ],
-)
 def test_non_yaml_result(llm, model):
     @Prompter(llm=llm, model_name=model, jinja=True)
     def search_query(history) -> QueryGPTResponse:

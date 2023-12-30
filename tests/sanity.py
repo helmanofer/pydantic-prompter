@@ -1,5 +1,4 @@
 import logging
-from pprint import pprint
 from tests.data_for_tests import *
 from pydantic_prompter import Prompter
 from pydantic_prompter.prompter import Message
