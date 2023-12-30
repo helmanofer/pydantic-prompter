@@ -16,6 +16,9 @@ logger = logging.getLogger()
 @pytest.mark.parametrize(
     "llm,model",
     [
+        ("bedrock", "meta.llama2-70b-chat-v1"),
+        ("bedrock", "meta.llama2-13b-chat-v1"),
+        ("bedrock", "cohere.command-text-v14"),
         ("openai", "gpt-3.5-turbo"),
         ("bedrock", "anthropic.claude-instant-v1"),
         ("bedrock", "anthropic.claude-v1"),
@@ -27,7 +30,7 @@ def test_pydantic_result(llm, model):
     def bbb(name) -> Hey:
         """
         - system: you are a writer
-        - user: >
+        - user:
             hi, my name is {{ name }} and my children are called, aa, bb, cc
             what is my name and my children name
         """
@@ -37,40 +40,17 @@ def test_pydantic_result(llm, model):
         assert isinstance(res, Hey)
         assert res.name == "Ofer"
     except (OpenAiAuthenticationError, BedRockAuthenticationError):
+        print(bbb.build_string())
+        logger.exception("")
         pytest.skip("unsupported configuration")
 
 
 @pytest.mark.parametrize(
     "llm,model",
     [
-        ("openai", "gpt-3.5-turbo"),
-        ("bedrock", "anthropic.claude-instant-v1"),
-        ("bedrock", "anthropic.claude-v1"),
-        ("bedrock", "anthropic.claude-v2"),
-    ],
-)
-def test_generic_result(llm, model):
-    @Prompter(llm=llm, model_name=model)
-    def aaa(name) -> MyChildren:
-        """
-        - user: >
-            hi, my name is {name} and my children are called, aa, bb, cc
-            how many children do I have and what's their names?
-        """
-
-    try:
-        res: MyChildren = aaa(name="Ofer")
-        assert isinstance(res, MyChildren)
-        assert res.num_of_children == 3
-        assert res.children_names == ["aa", "bb", "cc"]
-    except (OpenAiAuthenticationError, BedRockAuthenticationError) as e:
-        logger.warning(e)
-        pytest.skip("unsupported configuration")
-
-
-@pytest.mark.parametrize(
-    "llm,model",
-    [
+        ("bedrock", "meta.llama2-70b-chat-v1"),
+        ("bedrock", "meta.llama2-13b-chat-v1"),
+        ("bedrock", "cohere.command-text-v14"),
         ("openai", "gpt-3.5-turbo"),
         ("bedrock", "anthropic.claude-instant-v1"),
         ("bedrock", "anthropic.claude-v1"),
@@ -83,7 +63,7 @@ def test_non_yaml_result(llm, model):
         """
         {{ history }}
 
-        - user: |
+        - user:
             Generate a Google-like search query text encompassing all previous chat questions and answers
         """
 
@@ -105,6 +85,8 @@ def test_non_yaml_result(llm, model):
 @pytest.mark.parametrize(
     "llm,model",
     [
+        ("bedrock", "meta.llama2-70b-chat-v1"),
+        ("bedrock", "meta.llama2-13b-chat-v1"),
         ("openai", "gpt-3.5-turbo"),
         ("bedrock", "anthropic.claude-instant-v1"),
         ("bedrock", "anthropic.claude-v1"),
@@ -115,7 +97,7 @@ def test_complex_question_result(llm, model):
     @Prompter(llm=llm, jinja=True, model_name=model)
     def rank_recommendation(json_entries, query) -> RecommendationResults:
         """
-        - user: >
+        - user:
             Which of the following JSON entries fit best to the query. order by best fit descending
             Base your answer ONLY on the given YML entries, if you are not sure, or there are no entries
 

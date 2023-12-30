@@ -7,6 +7,7 @@ from retry import retry
 from pydantic_prompter.annotation_parser import AnnotationParser
 from pydantic_prompter.common import logger, Message
 from pydantic_prompter.exceptions import (
+    BadRoleError,
     OpenAiAuthenticationError,
     Retryable,
     NonRetryable,
@@ -52,17 +53,17 @@ class _Pr:
 
         import re
 
-        pattern = r"\n\s*- "
-        parts = re.split(pattern, content)
+        pattern = r"-.*?(user|system|assistant):(.*?)(?=- \w+:|\Z)"
+        matches = re.findall(pattern, content, re.DOTALL | re.MULTILINE)
+        result = [(m[0], m[1].strip()) for m in matches]
 
         messages = []
-        for content_part in parts:
-            if not content_part:
-                continue
-            content_part = content_part.strip()
-            content_part_dict = yaml.safe_load(content_part)
-            role, content = list(content_part_dict.items())[0]
-            messages.append(Message(role=role, content=content))
+
+        for role, content in result:
+            if role not in ["user", "system", "assistant"]:
+                raise BadRoleError(f"Role {role} is not valid")
+            messages.append(Message(role=role, content=content.rstrip().lstrip()))
+
         return messages
 
     def call_llm(self, messages: List[Message]):
