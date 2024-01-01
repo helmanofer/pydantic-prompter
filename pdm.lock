@@ -2,10 +2,10 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "openai", "test", "lint", "docs", "bedrock"]
+groups = ["default", "openai", "test", "lint", "docs", "bedrock", "deployment"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:66ac36d9ed79672dc00d1333dc51164290f1dfd31a2398c6399e0ca0e2a8f271"
+content_hash = "sha256:63a78ddf9cdc566d719204931321601aa396f39df0159292dfd85fd4245d0f09"
 
 [[package]]
 name = "aiohttp"
