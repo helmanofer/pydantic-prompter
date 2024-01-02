@@ -1,6 +1,6 @@
 [project]
 name = "pydantic-prompter"
-version = "0.1.23"
+version = "0.1.24"
 description = "Pydantic Prompter is a lightweight utility designed to facilitate the construction of prompts using YAML and generate Pydantic objects as outputs."
 authors = [
     { name = "Ofer Helman", email = "helmanofer@gmail.com" },
