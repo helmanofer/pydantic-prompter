@@ -58,7 +58,7 @@ class OpenAI(LLM):
 
     def call(self, messages: List[Message], scheme: dict) -> str:
         from openai import OpenAI
-        from openai import AuthenticationError
+        from openai import AuthenticationError, APIConnectionError
 
         _function_call = {
             "name": scheme["name"],
@@ -75,7 +75,7 @@ class OpenAI(LLM):
                 function_call=_function_call,
                 temperature=random.uniform(0.3, 1.3),
             )
-        except AuthenticationError as e:
+        except (AuthenticationError, APIConnectionError) as e:
             raise OpenAiAuthenticationError(e)
         return chat_completion.choices[0].message.function_call.arguments
 
@@ -290,7 +290,7 @@ class BedRockLlama2(BedRock):
                 contentType="application/json",
             )
         except Exception as e:
-            logger.exception(e)
+            logger.warning(e)
             raise BedRockAuthenticationError(e)
 
         response_body = json.loads(response.get("body").read().decode())
