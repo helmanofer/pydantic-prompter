@@ -20,12 +20,24 @@ license = { text = "MIT" }
 
 [project.optional-dependencies]
 openai = [
-    "openai>=0.27.10",
+    "openai>=1.6.1",
 ]
 
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests/*",
+]
+log_level = "INFO"
+log_format = "%(asctime)s %(levelname)s %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+log_cli = true
+log_cli_level = "INFO"
+
+
 
 [tool.pdm.dev-dependencies]
 bedrock = [
@@ -47,17 +59,9 @@ docs = [
     "mkdocs>=1.5.2",
     "mkdocs-material>=9.2.5",
 ]
-
-[tool.pytest.ini_options]
-testpaths = [
-    "tests/*",
+dev = [
+    "tox-pdm>=0.6.1",
 ]
-log_level = "INFO"
-log_format = "%(asctime)s %(levelname)s %(message)s"
-log_date_format = "%Y-%m-%d %H:%M:%S"
-log_cli = true
-log_cli_level = "INFO"
-
 
 [project.urls]
 Source = "https://github.com/helmanofer/pydantic-prompter"
