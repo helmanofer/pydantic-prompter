@@ -13,7 +13,7 @@ from pydantic_prompter.exceptions import (
 class AnnotationParser:
     @classmethod
     def get_parser(cls, function) -> "AnnotationParser":
-        from pydantic.main import ModelMetaclass  # noqa
+        from pydantic._internal._model_construction import ModelMetaclass
 
         return_obj = function.__annotations__.get("return", None)
 
@@ -43,7 +43,7 @@ class PydanticParser(AnnotationParser):
         }
 
     def llm_schema(self) -> str:
-        return_scheme = self.return_cls.schema()
+        return_scheme = self.return_cls.model_json_schema()
         return self.pydantic_schema(return_scheme)
 
     def cast_result(self, result: str):
