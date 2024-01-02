@@ -57,8 +57,8 @@ class OpenAI(LLM):
         return json.dumps(self.to_openai_format(messages), indent=4, sort_keys=True)
 
     def call(self, messages: List[Message], scheme: dict) -> str:
-        import openai
-        from openai.error import AuthenticationError
+        from openai import OpenAI
+        from openai import AuthenticationError, APIConnectionError
 
         _function_call = {
             "name": scheme["name"],
@@ -66,18 +66,18 @@ class OpenAI(LLM):
         logger.debug(f"Openai Functions: \n [{scheme}]")
         logger.debug(f"Openai function_call: \n {_function_call}")
         messages_oai = self.to_openai_format(messages)
-        openai.api_key = self.settings.openai_api_key
         try:
-            chat_completion = openai.ChatCompletion.create(
+            client = OpenAI(api_key=self.settings.openai_api_key)
+            chat_completion = client.chat.completions.create(
                 model=self.model_name,
                 messages=messages_oai,
                 functions=[scheme],
                 function_call=_function_call,
                 temperature=random.uniform(0.3, 1.3),
             )
-        except AuthenticationError as e:
+        except (AuthenticationError, APIConnectionError) as e:
             raise OpenAiAuthenticationError(e)
-        return chat_completion.choices[0].message["function_call"]["arguments"]
+        return chat_completion.choices[0].message.function_call.arguments
 
 
 class BedRock(LLM, abc.ABC):
@@ -290,7 +290,7 @@ class BedRockLlama2(BedRock):
                 contentType="application/json",
             )
         except Exception as e:
-            logger.exception(e)
+            logger.warning(e)
             raise BedRockAuthenticationError(e)
 
         response_body = json.loads(response.get("body").read().decode())
