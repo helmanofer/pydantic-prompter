@@ -50,7 +50,7 @@ class LLM:
 class OpenAI(LLM):
     @staticmethod
     def to_openai_format(msgs: List[Message]):
-        openai_msgs = [item.dict() for item in msgs]
+        openai_msgs = [item.model_dump() for item in msgs]
         return openai_msgs
 
     def debug_prompt(self, messages: List[Message], scheme: dict) -> str:

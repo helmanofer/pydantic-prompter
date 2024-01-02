@@ -1,6 +1,8 @@
 from pathlib import Path
-from typing import List, Optional
-from pydantic import BaseSettings, BaseModel, Field
+from typing import Optional
+
+from pydantic import BaseModel, Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _root_path = Path(__file__).resolve().parent
 
@@ -24,7 +26,6 @@ class Settings(BaseSettings):
     aws_profile: Optional[str] = None
     aws_access_key_id: str = ""
     aws_secret_access_key: str = ""
-
-    class Config:
-        env_file = _root_path.joinpath(".env")
-        env_nested_delimiter = "__"
+    model_config = SettingsConfigDict(
+        env_file=_root_path.joinpath(".env"), env_nested_delimiter="__", extra="ignore"
+    )
