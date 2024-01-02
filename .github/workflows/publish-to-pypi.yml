@@ -11,5 +11,6 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      - run: pip install pdm
-      - run: pdm publish -u helmanofer -P ${{ secrets.PYPI_PASSWORD }}
+      # - run: pip install pdm
+      - uses: pdm-project/setup-pdm@v3
+      - run: pdm publish
