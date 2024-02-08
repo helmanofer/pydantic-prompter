@@ -9,7 +9,7 @@ To install Pydantic Prompter, use the following command:
 
 
 ```bash
-pip install pydantic-prompter
+pip install 'pydantic-prompter[openai]'
 ```
 
 ### Setup

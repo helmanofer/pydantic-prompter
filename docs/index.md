@@ -6,6 +6,18 @@ This library leverages the [OpenAi function calling API](https://platform.openai
 
 The design of the library's API draws inspiration from [DeclarAI](https://github.com/vendi-ai/declarai)
 
+## Install
+#### OpenAI
+```python
+pip install 'pydantic-prompter[openai]'
+```
+
+#### Bedrock
+```python
+pip install 'pydantic-prompter[bedrock]'
+```
+
+
 
 ## Usage
 #### Basic usage

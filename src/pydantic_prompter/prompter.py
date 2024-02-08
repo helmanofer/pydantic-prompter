@@ -1,6 +1,5 @@
 from typing import List
 
-import yaml
 from jinja2 import Template
 from retry import retry
 
@@ -8,7 +7,6 @@ from pydantic_prompter.annotation_parser import AnnotationParser
 from pydantic_prompter.common import logger, Message
 from pydantic_prompter.exceptions import (
     BadRoleError,
-    OpenAiAuthenticationError,
     Retryable,
     NonRetryable,
 )
@@ -28,7 +26,7 @@ class _Pr:
             msgs = self.build_prompt(**inputs)
             logger.debug(f"Calling with prompt:\n{self.build_string(**inputs)}")
             return self.call_llm(msgs)
-        except (OpenAiAuthenticationError, NonRetryable):
+        except NonRetryable:
             raise
         except Retryable:
             logger.error(f"\n\nPrompt:\n\n{self.build_string(**inputs)}")
