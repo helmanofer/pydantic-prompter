@@ -3,6 +3,7 @@ nav:
   - Home: index.md
   - AI services: ai_services.md
   - Prompts: prompt_templates.md
+  - Supported models: supported_models.md
 theme:
   name: material
   features:

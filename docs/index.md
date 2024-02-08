@@ -17,6 +17,11 @@ pip install 'pydantic-prompter[openai]'
 pip install 'pydantic-prompter[bedrock]'
 ```
 
+#### Cohere
+```python
+pip install 'pydantic-prompter[cohere]'
+```
+
 
 
 ## Usage
