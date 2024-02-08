@@ -241,7 +241,6 @@ class BedRockLlama2(BedRock):
             }
         )
         response = self._boto_invoke(body)
-
         response_body = json.loads(response.get("body").read().decode())
         logger.info(response_body)
         res = self._strip_wrapping_garbage(response_body.get("generation"))
