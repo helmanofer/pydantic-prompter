@@ -39,6 +39,9 @@ class LLM:
         elif llm == "bedrock" and model_name.startswith("meta"):
             logger.debug("Using bedrock provider with Cohere model")
             llm_inst = BedRockLlama2(model_name)
+        elif llm == "cohere" and model_name.startswith("command"):
+            logger.debug("Using Cohere model")
+            llm_inst = Cohere(model_name)
         else:
             raise Exception(f"Model not implemented {llm}, {model_name}")
         logger.debug(
@@ -296,4 +299,24 @@ class BedRockLlama2(BedRock):
         response_body = json.loads(response.get("body").read().decode())
         logger.info(response_body)
         res = self._strip_wrapping_garbage(response_body.get("generation"))
+        return res
+
+
+class Cohere(BedRockCohere):
+    def call(self, messages: List[Message], scheme: dict) -> str:
+        import cohere
+        co = cohere.Client(settings.cohere_key) #TODO: fix that
+        
+        content = self.build_prompt(messages, scheme)
+        
+        response = co.chat(
+            message=content
+        )
+        logger.debug(f"Request body: \n{content}")
+
+        answer = response.text
+        logger.debug(f"Got answer: \n{answer}")
+
+        res = self._strip_wrapping_garbage(answer)
+
         return res

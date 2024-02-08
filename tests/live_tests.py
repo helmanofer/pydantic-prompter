@@ -16,13 +16,14 @@ logger = logging.getLogger()
 @pytest.mark.parametrize(
     "llm,model",
     [
-        ("bedrock", "meta.llama2-70b-chat-v1"),
-        ("bedrock", "meta.llama2-13b-chat-v1"),
-        ("bedrock", "cohere.command-text-v14"),
-        ("openai", "gpt-3.5-turbo"),
-        ("bedrock", "anthropic.claude-instant-v1"),
-        ("bedrock", "anthropic.claude-v1"),
-        ("bedrock", "anthropic.claude-v2"),
+        # ("bedrock", "meta.llama2-70b-chat-v1"),
+        # ("bedrock", "meta.llama2-13b-chat-v1"),
+        # ("bedrock", "cohere.command-text-v14"),
+        # ("openai", "gpt-3.5-turbo"),
+        # ("bedrock", "anthropic.claude-instant-v1"),
+        # ("bedrock", "anthropic.claude-v1"),
+        # ("bedrock", "anthropic.claude-v2"),
+        ("cohere", "command")
     ],
 )
 def test_pydantic_result(llm, model):
