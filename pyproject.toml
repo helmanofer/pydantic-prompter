@@ -24,8 +24,8 @@ openai = [
 ]
 
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 testpaths = [
