@@ -31,11 +31,11 @@ build-backend = "setuptools.build_meta"
 testpaths = [
     "tests/*",
 ]
-log_level = "INFO"
+log_level = "DEBUG"
 log_format = "%(asctime)s %(levelname)s %(message)s"
 log_date_format = "%Y-%m-%d %H:%M:%S"
 log_cli = true
-log_cli_level = "INFO"
+log_cli_level = "DEBUG"
 
 [tool.pdm.dev-dependencies]
 bedrock = [

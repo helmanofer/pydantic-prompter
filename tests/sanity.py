@@ -1,17 +1,23 @@
 import logging
+import pytest
+from pydantic_prompter.exceptions import ArgumentError
 from tests.data_for_tests import *
 from pydantic_prompter import Prompter
 from pydantic_prompter.prompter import Message
 
 
+
+logging.getLogger("pydantic_prompter").setLevel(logging.DEBUG)
+logging.basicConfig(
+    level=logging.DEBUG,
+)
+
+logger = logging.getLogger("pydantic_prompter_test")
+
+
 def test_basic():
     from pydantic_prompter import Prompter
     from pydantic import BaseModel
-
-    logging.getLogger("pydantic_prompter").setLevel(logging.DEBUG)
-    logging.basicConfig(
-        level=logging.DEBUG,
-    )
 
     class Hi(BaseModel):
         response: str
@@ -154,3 +160,19 @@ def test_complex_question():
 
     res = rank_recommendation.build_prompt(json_entries=entries, query=query)
     assert res == expected
+
+
+def test_args_error():
+    @Prompter(llm="cohere", model_name="command")
+    def bbb(name) -> Hey:
+        """
+        - system: you are a writer
+        - user:
+            hi, my name is {{ name }} and my children are called, aa, bb, cc
+            what is my name and my children name
+        """
+
+    with pytest.raises(ArgumentError) as e:
+        bbb("Ofer")
+        logger.info(str(e.value))
+

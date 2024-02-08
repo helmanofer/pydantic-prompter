@@ -6,6 +6,7 @@ from retry import retry
 from pydantic_prompter.annotation_parser import AnnotationParser
 from pydantic_prompter.common import logger, Message
 from pydantic_prompter.exceptions import (
+    ArgumentError,
     BadRoleError,
     Retryable,
     NonRetryable,
@@ -21,7 +22,9 @@ class _Pr:
         self.parser = AnnotationParser.get_parser(function)
 
     @retry(tries=3, delay=1, logger=logger, exceptions=(Retryable,))
-    def __call__(self, **inputs):
+    def __call__(self, *args, **inputs):
+        if args:
+            raise ArgumentError("please use only kwargs")
         try:
             msgs = self.build_prompt(**inputs)
             logger.debug(f"Calling with prompt:\n{self.build_string(**inputs)}")

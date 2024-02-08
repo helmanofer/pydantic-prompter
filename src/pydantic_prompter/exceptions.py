@@ -24,3 +24,9 @@ class BadRoleError(NonRetryable):
 
 class FailedToCastLLMResult(Retryable):
     pass
+
+class CohereAuthenticationError(NonRetryable):
+    pass
+
+class ArgumentError(NonRetryable):
+    pass
