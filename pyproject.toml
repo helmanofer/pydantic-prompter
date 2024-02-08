@@ -1,6 +1,6 @@
 [project]
 name = "pydantic-prompter"
-version = "0.1.25"
+version = "0.1.26"
 description = "Pydantic Prompter is a lightweight utility designed to facilitate the construction of prompts using YAML and generate Pydantic objects as outputs."
 authors = [
     { name = "Ofer Helman", email = "helmanofer@gmail.com" },
@@ -20,12 +20,22 @@ license = { text = "MIT" }
 
 [project.optional-dependencies]
 openai = [
-    "openai>=0.27.10",
+    "openai>=1.6.1",
 ]
 
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests/*",
+]
+log_level = "INFO"
+log_format = "%(asctime)s %(levelname)s %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+log_cli = true
+log_cli_level = "INFO"
 
 [tool.pdm.dev-dependencies]
 bedrock = [
@@ -47,17 +57,9 @@ docs = [
     "mkdocs>=1.5.2",
     "mkdocs-material>=9.2.5",
 ]
-
-[tool.pytest.ini_options]
-testpaths = [
-    "tests/*",
+dev = [
+    "tox-pdm>=0.6.1",
 ]
-log_level = "INFO"
-log_format = "%(asctime)s %(levelname)s %(message)s"
-log_date_format = "%Y-%m-%d %H:%M:%S"
-log_cli = true
-log_cli_level = "INFO"
-
 
 [project.urls]
 Source = "https://github.com/helmanofer/pydantic-prompter"

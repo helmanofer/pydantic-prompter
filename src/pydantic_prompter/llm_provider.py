@@ -57,8 +57,8 @@ class OpenAI(LLM):
         return json.dumps(self.to_openai_format(messages), indent=4, sort_keys=True)
 
     def call(self, messages: List[Message], scheme: dict) -> str:
-        import openai
-        from openai.error import AuthenticationError
+        from openai import OpenAI
+        from openai import AuthenticationError, APIConnectionError
 
         _function_call = {
             "name": scheme["name"],
@@ -66,24 +66,28 @@ class OpenAI(LLM):
         logger.debug(f"Openai Functions: \n [{scheme}]")
         logger.debug(f"Openai function_call: \n {_function_call}")
         messages_oai = self.to_openai_format(messages)
-        openai.api_key = self.settings.openai_api_key
         try:
-            chat_completion = openai.ChatCompletion.create(
+            client = OpenAI(api_key=self.settings.openai_api_key)
+            chat_completion = client.chat.completions.create(
                 model=self.model_name,
                 messages=messages_oai,
                 functions=[scheme],
                 function_call=_function_call,
                 temperature=random.uniform(0.3, 1.3),
             )
-        except AuthenticationError as e:
+        except (AuthenticationError, APIConnectionError) as e:
             raise OpenAiAuthenticationError(e)
-        return chat_completion.choices[0].message["function_call"]["arguments"]
+        return chat_completion.choices[0].message.function_call.arguments
 
 
 class BedRock(LLM, abc.ABC):
-    @abc.abstractmethod
-    def _strip_wrapping_garbage(self, body: str) -> str:
-        raise NotImplementedError
+    @staticmethod
+    def _strip_wrapping_garbage(body: str):
+        body = body.replace("</json>", "")
+        left = body.find("{")
+        right = body.rfind("}")
+        j = body[left : right + 1]
+        return j
 
     @property
     @abc.abstractmethod
@@ -112,19 +116,9 @@ class BedRock(LLM, abc.ABC):
     def debug_prompt(self, messages: List[Message], scheme: dict) -> str:
         return self.build_prompt(messages, scheme)
 
-    def call(self, messages: List[Message], scheme: dict) -> str:
-        content = self.build_prompt(messages, scheme)
-
-        body = json.dumps(
-            {
-                "max_tokens_to_sample": 8000,
-                "prompt": content,
-                "stop_sequences": [self._stop_sequence],
-                "temperature": random.uniform(0, 1),
-            }
-        )
-        logger.debug(f"Request body: \n{body}")
+    def _boto_invoke(self, body):
         try:
+            logger.debug(f"Request body: \n{body}")
             import boto3
 
             os.environ["AWS_ACCESS_KEY_ID"] = self.settings.aws_access_key_id
@@ -144,6 +138,21 @@ class BedRock(LLM, abc.ABC):
         except Exception as e:
             raise BedRockAuthenticationError(e)
 
+        return response
+
+    def call(self, messages: List[Message], scheme: dict) -> str:
+        content = self.build_prompt(messages, scheme)
+
+        body = json.dumps(
+            {
+                "max_tokens_to_sample": 8000,
+                "prompt": content,
+                "stop_sequences": [self._stop_sequence],
+                "temperature": random.uniform(0, 1),
+            }
+        )
+
+        response = self._boto_invoke(body)
         response_body = json.loads(response.get("body").read().decode())
         logger.info(response_body)
         res = self._strip_wrapping_garbage(response_body.get("completion"))
@@ -151,13 +160,6 @@ class BedRock(LLM, abc.ABC):
 
 
 class BedRockAnthropic(BedRock):
-    def _strip_wrapping_garbage(self, body: str):
-        body = body.replace("</json>", "")
-        left = body.find("{")
-        right = body.rfind("}")
-        j = body[left : right + 1]
-        return j
-
     @property
     def _template_path(self):
         return self.settings.template_paths.anthropic
@@ -175,13 +177,6 @@ class BedRockAnthropic(BedRock):
 
 
 class BedRockCohere(BedRock):
-    def _strip_wrapping_garbage(self, body: str) -> str:
-        body = body.replace("</json>", "")
-        left = body.find("{")
-        right = body.rfind("}")
-        j = body[left : right + 1]
-        return j
-
     @property
     def _template_path(self) -> str:
         return self.settings.template_paths.cohere
@@ -207,26 +202,7 @@ class BedRockCohere(BedRock):
                 "temperature": random.uniform(0, 1),
             }
         )
-        logger.debug(f"Request body: \n{body}")
-        try:
-            import boto3
-
-            os.environ["AWS_ACCESS_KEY_ID"] = self.settings.aws_access_key_id
-            os.environ["AWS_SECRET_ACCESS_KEY"] = self.settings.aws_secret_access_key
-
-            session = boto3.Session(
-                profile_name=self.settings.aws_profile,
-                region_name=self.settings.aws_default_region,
-            )
-            client = session.client("bedrock-runtime")
-            response = client.invoke_model(
-                body=body,
-                modelId=self.model_name,
-                accept="application/json",
-                contentType="application/json",
-            )
-        except Exception as e:
-            raise BedRockAuthenticationError(e)
+        response = self._boto_invoke(body)
 
         response_body = json.loads(response.get("body").read().decode())
         logger.info(response_body)
@@ -235,13 +211,6 @@ class BedRockCohere(BedRock):
 
 
 class BedRockLlama2(BedRock):
-    def _strip_wrapping_garbage(self, body: str) -> str:
-        body = body.replace("</json>", "")
-        left = body.find("{")
-        right = body.rfind("}")
-        j = body[left : right + 1]
-        return j
-
     @property
     def _template_path(self) -> str:
         return self.settings.template_paths.llama2
@@ -271,28 +240,7 @@ class BedRockLlama2(BedRock):
                 "temperature": random.uniform(0, 1),
             }
         )
-        logger.debug(f"Request body: \n{body}")
-        try:
-            import boto3
-
-            os.environ["AWS_ACCESS_KEY_ID"] = self.settings.aws_access_key_id
-            os.environ["AWS_SECRET_ACCESS_KEY"] = self.settings.aws_secret_access_key
-
-            session = boto3.Session(
-                profile_name=self.settings.aws_profile,
-                region_name=self.settings.aws_default_region,
-            )
-            client = session.client("bedrock-runtime")
-            response = client.invoke_model(
-                body=body,
-                modelId=self.model_name,
-                accept="application/json",
-                contentType="application/json",
-            )
-        except Exception as e:
-            logger.exception(e)
-            raise BedRockAuthenticationError(e)
-
+        response = self._boto_invoke(body)
         response_body = json.loads(response.get("body").read().decode())
         logger.info(response_body)
         res = self._strip_wrapping_garbage(response_body.get("generation"))
