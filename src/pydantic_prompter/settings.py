@@ -3,6 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from dotenv import find_dotenv
 
 _root_path = Path(__file__).resolve().parent
 
@@ -28,5 +29,5 @@ class Settings(BaseSettings):
     aws_secret_access_key: str = ""
     cohere_key: str = ""
     model_config = SettingsConfigDict(
-        env_file=_root_path.joinpath(".env"), env_nested_delimiter="__", extra="ignore"
+        env_file=find_dotenv(), env_nested_delimiter="__", extra="ignore"
     )

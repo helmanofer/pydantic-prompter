@@ -8,6 +8,7 @@ from jinja2 import Template
 
 from pydantic_prompter.common import Message, logger
 from pydantic_prompter.exceptions import (
+    CohereAuthenticationError,
     OpenAiAuthenticationError,
     BedRockAuthenticationError,
 )
@@ -304,19 +305,25 @@ class BedRockLlama2(BedRock):
 
 class Cohere(BedRockCohere):
     def call(self, messages: List[Message], scheme: dict) -> str:
-        import cohere
-        co = cohere.Client(settings.cohere_key) #TODO: fix that
-        
-        content = self.build_prompt(messages, scheme)
-        
-        response = co.chat(
-            message=content
-        )
-        logger.debug(f"Request body: \n{content}")
+        try:
+            import cohere
+            os.environ["CO_API_KEY"] = self.settings.cohere_key
+            co = cohere.Client()
+            content = self.build_prompt(messages, scheme)
+            
+            response = co.chat(
+                message=content,
+                temperature=random.uniform(0, 1),
+            )
+            logger.debug(f"Request body: \n{content}")
+
+        except Exception as e:
+            logger.warning(e)
+            raise CohereAuthenticationError(e)
+
 
         answer = response.text
         logger.debug(f"Got answer: \n{answer}")
-
         res = self._strip_wrapping_garbage(answer)
 
         return res

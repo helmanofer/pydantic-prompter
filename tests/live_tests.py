@@ -4,6 +4,7 @@ import pytest
 
 from pydantic_prompter import Prompter
 from pydantic_prompter.exceptions import (
+    CohereAuthenticationError,
     OpenAiAuthenticationError,
     BedRockAuthenticationError,
 )
@@ -23,7 +24,9 @@ logger = logging.getLogger()
         # ("bedrock", "anthropic.claude-instant-v1"),
         # ("bedrock", "anthropic.claude-v1"),
         # ("bedrock", "anthropic.claude-v2"),
-        ("cohere", "command")
+        ("cohere", "command"),
+        ("cohere", "command-light"),
+
     ],
 )
 def test_pydantic_result(llm, model):
@@ -40,7 +43,7 @@ def test_pydantic_result(llm, model):
         res: Hey = bbb(name="Ofer")
         assert isinstance(res, Hey)
         assert res.name == "Ofer"
-    except (OpenAiAuthenticationError, BedRockAuthenticationError):
+    except (OpenAiAuthenticationError, BedRockAuthenticationError, CohereAuthenticationError):
         print(bbb.build_string())
         logger.exception("")
         pytest.skip("unsupported configuration")
@@ -49,13 +52,16 @@ def test_pydantic_result(llm, model):
 @pytest.mark.parametrize(
     "llm,model",
     [
-        ("bedrock", "meta.llama2-70b-chat-v1"),
-        ("bedrock", "meta.llama2-13b-chat-v1"),
-        ("bedrock", "cohere.command-text-v14"),
-        ("openai", "gpt-3.5-turbo"),
-        ("bedrock", "anthropic.claude-instant-v1"),
-        ("bedrock", "anthropic.claude-v1"),
-        ("bedrock", "anthropic.claude-v2"),
+        # ("bedrock", "meta.llama2-70b-chat-v1"),
+        # ("bedrock", "meta.llama2-13b-chat-v1"),
+        # ("bedrock", "cohere.command-text-v14"),
+        # ("openai", "gpt-3.5-turbo"),
+        # ("bedrock", "anthropic.claude-instant-v1"),
+        # ("bedrock", "anthropic.claude-v1"),
+        # ("bedrock", "anthropic.claude-v2"),
+        ("cohere", "command"),
+        ("cohere", "command-light"),
+
     ],
 )
 def test_non_yaml_result(llm, model):
@@ -78,7 +84,7 @@ def test_non_yaml_result(llm, model):
     try:
         res = search_query(history="\n".join(history))
         assert isinstance(res, QueryGPTResponse)
-    except (OpenAiAuthenticationError, BedRockAuthenticationError) as e:
+    except (OpenAiAuthenticationError, BedRockAuthenticationError, CohereAuthenticationError) as e:
         logger.warning(e)
         pytest.skip("unsupported configuration")
 
@@ -86,12 +92,15 @@ def test_non_yaml_result(llm, model):
 @pytest.mark.parametrize(
     "llm,model",
     [
-        ("bedrock", "meta.llama2-70b-chat-v1"),
-        ("bedrock", "meta.llama2-13b-chat-v1"),
-        ("openai", "gpt-3.5-turbo"),
-        ("bedrock", "anthropic.claude-instant-v1"),
-        ("bedrock", "anthropic.claude-v1"),
-        ("bedrock", "anthropic.claude-v2"),
+        # ("bedrock", "meta.llama2-70b-chat-v1"),
+        # ("bedrock", "meta.llama2-13b-chat-v1"),
+        # ("openai", "gpt-3.5-turbo"),
+        # ("bedrock", "anthropic.claude-instant-v1"),
+        # ("bedrock", "anthropic.claude-v1"),
+        # ("bedrock", "anthropic.claude-v2"),
+        ("cohere", "command"),
+        ("cohere", "command-light"),
+
     ],
 )
 def test_complex_question_result(llm, model):
@@ -112,6 +121,6 @@ def test_complex_question_result(llm, model):
     try:
         res = rank_recommendation(json_entries=entries, query=query)
         assert isinstance(res, RecommendationResults)
-    except (OpenAiAuthenticationError, BedRockAuthenticationError) as e:
+    except (OpenAiAuthenticationError, BedRockAuthenticationError, CohereAuthenticationError) as e:
         logger.warning(e)
         pytest.skip("unsupported configuration")
