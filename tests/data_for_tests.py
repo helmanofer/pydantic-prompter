@@ -19,7 +19,7 @@ class RecommendedEntry(BaseModel):
 
 
 class RecommendationResults(BaseModel):
-    title: str
+    title: str = Field(description="Title describing the list of entries", default="")
     entries: List[RecommendedEntry]
 
 

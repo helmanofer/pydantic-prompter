@@ -2,7 +2,8 @@ import json
 from json import JSONDecodeError
 from typing import Dict, Any
 
-from pydantic import ValidationError
+import yaml
+from pydantic import ValidationError, ConfigDict
 
 from pydantic_prompter.common import logger
 from pydantic_prompter.exceptions import (
@@ -25,6 +26,7 @@ class AnnotationParser:
 
     def __init__(self, function):
         self.return_cls = function.__annotations__["return"]
+        self.return_cls.model_config = ConfigDict(coerce_numbers_to_str=True)
 
     def llm_schema(self) -> Dict:
         raise NotImplementedError
@@ -50,7 +52,8 @@ class PydanticParser(AnnotationParser):
         try:
             j = json.loads(result, strict=False)
             return self.return_cls(**j)
-        except (ValidationError, JSONDecodeError):
+        except (ValidationError, JSONDecodeError) as e:
+            logger.exception(f"Failed to parse: \n------\n{result}\n------\n")
             raise FailedToCastLLMResult(
                 f"\n\nFailed to validate JSON: \n\n{result}\n\n"
             )

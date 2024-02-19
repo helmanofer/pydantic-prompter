@@ -21,13 +21,14 @@ class TemplatePaths(BaseModel):
 
 
 class Settings(BaseSettings):
-    openai_api_key: str = ""
+    openai_api_key: Optional[str] = None
     template_paths: TemplatePaths = TemplatePaths()
     aws_default_region: str = "us-east-1"
     aws_profile: Optional[str] = None
-    aws_access_key_id: str = ""
-    aws_secret_access_key: str = ""
-    cohere_key: str = ""
+    aws_access_key_id: Optional[str] = None
+    aws_secret_access_key: Optional[str] = None
+    aws_session_token: Optional[str] = None
+    cohere_key: Optional[str] = None
     model_config = SettingsConfigDict(
         env_file=find_dotenv(), env_nested_delimiter="__", extra="ignore"
     )

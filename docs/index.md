@@ -2,9 +2,14 @@
 
 Pydantic Prompter is a lightweight tool designed for effortlessly constructing prompts and obtaining Pydantic objects as outputs.
 
-This library leverages the [OpenAi function calling API](https://platform.openai.com/docs/guides/gpt/function-calling) for its functionality.
 
-The design of the library's API draws inspiration from [DeclarAI](https://github.com/vendi-ai/declarai)
+Seamlessly call LLMs like functions in Python with Pydantic Prompter. 
+It handles prompt creation and output parsing to custom models for providers like Cohere, 
+Bedrock, and OpenAI. Get [OpenAi function calling API](https://platform.openai.com/docs/guides/gpt/function-calling) capabilities for any LLM. 
+Structured text generation with less code.
+
+The design of the library's API draws inspiration by [DeclarAI](https://github.com/vendi-ai/declarai).
+Other alternatives [Outlines](https://github.com/outlines-dev/outlines) and [Jsonformer](https://github.com/1rgs/jsonformer)
 
 ## Install
 #### OpenAI

@@ -4,6 +4,7 @@ import os
 import random
 from typing import Dict, List
 
+import yaml
 from jinja2 import Template
 
 from pydantic_prompter.common import Message, logger
@@ -111,10 +112,11 @@ class BedRock(LLM, abc.ABC):
         if "prompt_templates" not in self._template_path:
             logger.info(f"Using custom prompt from {self._template_path}")
         ant_template = open(self._template_path).read()
-        ant_scheme = json.dumps(scheme["parameters"], indent=4)
+        scheme_ = json.dumps(scheme["parameters"], indent=4)
+        # schema_ = yaml.safe_dump(scheme["parameters"])
         ant_msgs = self.format_messages(messages)
         template = Template(ant_template, keep_trailing_newline=True)
-        content = template.render(schema=ant_scheme, question=ant_msgs).strip()
+        content = template.render(schema=scheme_, question=ant_msgs).strip()
         return content
 
     def debug_prompt(self, messages: List[Message], scheme: dict) -> str:
@@ -125,10 +127,10 @@ class BedRock(LLM, abc.ABC):
             logger.debug(f"Request body: \n{body}")
             import boto3
 
-            os.environ["AWS_ACCESS_KEY_ID"] = self.settings.aws_access_key_id
-            os.environ["AWS_SECRET_ACCESS_KEY"] = self.settings.aws_secret_access_key
-
             session = boto3.Session(
+                aws_access_key_id=self.settings.aws_access_key_id,
+                aws_secret_access_key=self.settings.aws_secret_access_key,
+                aws_session_token=self.settings.aws_session_token,
                 profile_name=self.settings.aws_profile,
                 region_name=self.settings.aws_default_region,
             )
@@ -255,10 +257,10 @@ class Cohere(BedRockCohere):
     def call(self, messages: List[Message], scheme: dict) -> str:
         try:
             import cohere
-            os.environ["CO_API_KEY"] = self.settings.cohere_key
-            co = cohere.Client()
+
+            co = cohere.Client(api_key=self.settings.cohere_key)
             content = self.build_prompt(messages, scheme)
-            
+
             response = co.chat(
                 message=content,
                 temperature=random.uniform(0, 1),
@@ -268,7 +270,6 @@ class Cohere(BedRockCohere):
         except Exception as e:
             logger.warning(e)
             raise CohereAuthenticationError(e)
-
 
         answer = response.text
         logger.debug(f"Got answer: \n{answer}")
