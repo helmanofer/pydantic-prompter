@@ -64,7 +64,7 @@ class OpenAI(LLM):
         return json.dumps(self.to_openai_format(messages), indent=4, sort_keys=True)
 
     def call(self, messages: List[Message], scheme: dict) -> str:
-        from openai import OpenAI
+        from openai import OpenAI, OpenAIError
         from openai import AuthenticationError, APIConnectionError
 
         _function_call = {
@@ -82,7 +82,7 @@ class OpenAI(LLM):
                 function_call=_function_call,
                 temperature=random.uniform(0.3, 1.3),
             )
-        except (AuthenticationError, APIConnectionError) as e:
+        except (AuthenticationError, APIConnectionError, OpenAIError) as e:
             raise OpenAiAuthenticationError(e)
         return chat_completion.choices[0].message.function_call.arguments
 
