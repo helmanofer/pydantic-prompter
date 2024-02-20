@@ -4,12 +4,11 @@ from jinja2 import Template
 from retry import retry
 
 from pydantic_prompter.annotation_parser import AnnotationParser
-from pydantic_prompter.common import logger, Message
+from pydantic_prompter.common import logger, Message, LLMDataAndResult
 from pydantic_prompter.exceptions import (
     ArgumentError,
     BadRoleError,
     Retryable,
-    NonRetryable,
 )
 from pydantic_prompter.llm_provider import LLM
 
@@ -25,27 +24,29 @@ class _Pr:
     def __call__(self, *args, **inputs):
         if args:
             raise ArgumentError("please use only kwargs")
-        try:
-            msgs = self.build_prompt(**inputs)
-            logger.debug(f"Calling with prompt:\n{self.build_string(**inputs)}")
-            return self.call_llm(msgs)
-        except NonRetryable:
-            raise
-        except Retryable:
-            logger.error(f"\n\nPrompt:\n\n{self.build_string(**inputs)}")
-            raise
-        except Exception as e:
-            logger.error(
-                f"\n\nUnknown Error\n\nPrompt:\n\n{self.build_string(**inputs)}"
-            )
-            raise
 
-    def build_string(self, **inputs):
-        msgs = self.build_prompt(**inputs)
+        llm_data = LLMDataAndResult(inputs=inputs)
+        llm_data.messages = self._build_prompt(**inputs)
+        logger.debug(f"Calling with prompt:\n{self.build_string(**inputs)}")
+        res: LLMDataAndResult = self.call_llm(llm_data)
+
+        if res.error:
+            logger.error(f"\n\n ----> START OF ERROR <---- ")
+            logger.exception(llm_data.error)
+            logger.error(f"\n\nError ----> \n\n{type(res.error)}: {res.error}")
+            logger.error(f"\n\nLLM output ----> \n\n{res.raw_result}")
+            logger.error(f"\n\nLLM clean output ----> \n\n{res.clean_result}")
+            logger.error(f"\n\nPrompt ----> \n\n{self.build_string(**inputs)}")
+            logger.error(f"\n\n ----> END OF ERROR <---- ")
+            raise res.error
+        return res.result
+
+    def build_string(self, **inputs) -> str:
+        msgs = self._build_prompt(**inputs)
         res = self.llm.debug_prompt(msgs, self.parser.llm_schema())
         return res
 
-    def build_prompt(self, **inputs) -> List[Message]:
+    def _build_prompt(self, **inputs) -> List[Message]:
         if self.jinja:
             template = Template(self.function.__doc__, keep_trailing_newline=True)
             content = template.render(**inputs)
@@ -67,12 +68,17 @@ class _Pr:
 
         return messages
 
-    def call_llm(self, messages: List[Message]):
+    def call_llm(self, llm_data: LLMDataAndResult) -> LLMDataAndResult:
         return_scheme_llm_str = self.parser.llm_schema()
 
-        ret_str = self.llm.call(messages, return_scheme_llm_str)
+        ret_str = self.llm.call(llm_data.messages, return_scheme_llm_str)
+        llm_data.raw_result = ret_str
+        res = self.llm.clean_result(ret_str)
+        llm_data.clean_result = res
+
+        self.parser.cast_result(llm_data)
         logger.debug(f"Response from llm: \n{ret_str}")
-        return self.parser.cast_result(ret_str)
+        return llm_data
 
 
 class Prompter:

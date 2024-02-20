@@ -1,7 +1,6 @@
 <s>[INST] <<SYS>>
-You are a REST API that answers the question contained in <question> tags.
+Act like a REST API that answers the question contained in <question> tags.
 Your response should be within <json></json> xml tags in JSON format with the schema specified in the <json_schema> tags.
-DO NOT add any other text other than the JSON response
 
 <json_schema>
 {{ schema }}
@@ -9,5 +8,4 @@ DO NOT add any other text other than the JSON response
 <</SYS>>
 
 {{ question }}
-
-[/INST]
+<json>

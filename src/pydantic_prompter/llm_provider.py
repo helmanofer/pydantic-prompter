@@ -1,6 +1,5 @@
 import abc
 import json
-import os
 import random
 from typing import Dict, List
 
@@ -15,6 +14,10 @@ from pydantic_prompter.exceptions import (
 
 
 class LLM:
+    @staticmethod
+    def clean_result(body: str):
+        return body
+
     def __init__(self, model_name):
         from pydantic_prompter.settings import Settings
 
@@ -61,7 +64,7 @@ class OpenAI(LLM):
         return json.dumps(self.to_openai_format(messages), indent=4, sort_keys=True)
 
     def call(self, messages: List[Message], scheme: dict) -> str:
-        from openai import OpenAI
+        from openai import OpenAI, OpenAIError
         from openai import AuthenticationError, APIConnectionError
 
         _function_call = {
@@ -79,14 +82,14 @@ class OpenAI(LLM):
                 function_call=_function_call,
                 temperature=random.uniform(0.3, 1.3),
             )
-        except (AuthenticationError, APIConnectionError) as e:
+        except (AuthenticationError, APIConnectionError, OpenAIError) as e:
             raise OpenAiAuthenticationError(e)
         return chat_completion.choices[0].message.function_call.arguments
 
 
 class BedRock(LLM, abc.ABC):
     @staticmethod
-    def _strip_wrapping_garbage(body: str):
+    def clean_result(body: str):
         body = body.replace("</json>", "")
         left = body.find("{")
         right = body.rfind("}")
@@ -107,28 +110,29 @@ class BedRock(LLM, abc.ABC):
     def format_messages(self, msgs: List[Message]) -> str:
         raise NotImplementedError
 
-    def build_prompt(self, messages: List[Message], scheme: dict):
+    def _build_prompt(self, messages: List[Message], scheme: dict):
         if "prompt_templates" not in self._template_path:
             logger.info(f"Using custom prompt from {self._template_path}")
         ant_template = open(self._template_path).read()
-        ant_scheme = json.dumps(scheme["parameters"], indent=4)
+        scheme_ = json.dumps(scheme["parameters"], indent=4)
+        # schema_ = yaml.safe_dump(scheme["parameters"])
         ant_msgs = self.format_messages(messages)
         template = Template(ant_template, keep_trailing_newline=True)
-        content = template.render(schema=ant_scheme, question=ant_msgs).strip()
+        content = template.render(schema=scheme_, question=ant_msgs).strip()
         return content
 
     def debug_prompt(self, messages: List[Message], scheme: dict) -> str:
-        return self.build_prompt(messages, scheme)
+        return self._build_prompt(messages, scheme)
 
     def _boto_invoke(self, body):
         try:
             logger.debug(f"Request body: \n{body}")
             import boto3
 
-            os.environ["AWS_ACCESS_KEY_ID"] = self.settings.aws_access_key_id
-            os.environ["AWS_SECRET_ACCESS_KEY"] = self.settings.aws_secret_access_key
-
             session = boto3.Session(
+                aws_access_key_id=self.settings.aws_access_key_id,
+                aws_secret_access_key=self.settings.aws_secret_access_key,
+                aws_session_token=self.settings.aws_session_token,
                 profile_name=self.settings.aws_profile,
                 region_name=self.settings.aws_default_region,
             )
@@ -145,7 +149,7 @@ class BedRock(LLM, abc.ABC):
         return response
 
     def call(self, messages: List[Message], scheme: dict) -> str:
-        content = self.build_prompt(messages, scheme)
+        content = self._build_prompt(messages, scheme)
 
         body = json.dumps(
             {
@@ -159,8 +163,8 @@ class BedRock(LLM, abc.ABC):
         response = self._boto_invoke(body)
         response_body = json.loads(response.get("body").read().decode())
         logger.info(response_body)
-        res = self._strip_wrapping_garbage(response_body.get("completion"))
-        return res
+        # res = self.clean_result(response_body.get("completion"))
+        return response_body.get("completion")
 
 
 class BedRockAnthropic(BedRock):
@@ -197,7 +201,7 @@ class BedRockCohere(BedRock):
         return "\n".join(output)
 
     def call(self, messages: List[Message], scheme: dict) -> str:
-        content = self.build_prompt(messages, scheme)
+        content = self._build_prompt(messages, scheme)
 
         body = json.dumps(
             {
@@ -210,11 +214,20 @@ class BedRockCohere(BedRock):
 
         response_body = json.loads(response.get("body").read().decode())
         logger.info(response_body)
-        res = self._strip_wrapping_garbage(response_body["generations"][0]["text"])
-        return res
+        # res = self.clean_result(response_body["generations"][0]["text"])
+        return response_body["generations"][0]["text"]
 
 
 class BedRockLlama2(BedRock):
+    @staticmethod
+    def clean_result(body: str):
+        body = body.split("<json_schema>")[0]
+        body = body.replace("</json>", "")
+        left = body.find("{")
+        right = body.rfind("}")
+        j = body[left : right + 1]
+        return j
+
     @property
     def _template_path(self) -> str:
         return self.settings.template_paths.llama2
@@ -235,7 +248,7 @@ class BedRockLlama2(BedRock):
         return "\n".join(output)
 
     def call(self, messages: List[Message], scheme: dict) -> str:
-        content = self.build_prompt(messages, scheme)
+        content = self._build_prompt(messages, scheme)
 
         body = json.dumps(
             {
@@ -246,19 +259,18 @@ class BedRockLlama2(BedRock):
         )
         response = self._boto_invoke(body)
         response_body = json.loads(response.get("body").read().decode())
-        logger.info(response_body)
-        res = self._strip_wrapping_garbage(response_body.get("generation"))
-        return res
+        logger.debug(response_body)
+        return response_body.get("generation")
 
 
 class Cohere(BedRockCohere):
     def call(self, messages: List[Message], scheme: dict) -> str:
         try:
             import cohere
-            os.environ["CO_API_KEY"] = self.settings.cohere_key
-            co = cohere.Client()
-            content = self.build_prompt(messages, scheme)
-            
+
+            co = cohere.Client(api_key=self.settings.cohere_key)
+            content = self._build_prompt(messages, scheme)
+
             response = co.chat(
                 message=content,
                 temperature=random.uniform(0, 1),
@@ -269,9 +281,8 @@ class Cohere(BedRockCohere):
             logger.warning(e)
             raise CohereAuthenticationError(e)
 
-
         answer = response.text
         logger.debug(f"Got answer: \n{answer}")
-        res = self._strip_wrapping_garbage(answer)
+        # res = self.clean_result(answer)
 
-        return res
+        return answer

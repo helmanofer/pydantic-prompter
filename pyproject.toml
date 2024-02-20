@@ -39,12 +39,15 @@ build-backend = "pdm.backend"
 testpaths = [
     "tests/*",
 ]
-log_level = "DEBUG"
-log_format = "%(asctime)s %(levelname)s %(message)s"
+log_level = "INFO"
+log_format = "%(asctime)s %(levelname)s %(filename)s %(lineno)d - %(message)s"
 log_date_format = "%Y-%m-%d %H:%M:%S"
 log_cli = true
-log_cli_level = "DEBUG"
-
+log_cli_level = "INFO"
+markers = [
+    "live",
+    "serial",
+]
 [tool.pdm.dev-dependencies]
 test = [
     "pytest>=7.4.0",
