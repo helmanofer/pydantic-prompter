@@ -1,10 +1,8 @@
 import abc
 import json
-import os
 import random
 from typing import Dict, List
 
-import yaml
 from jinja2 import Template
 
 from pydantic_prompter.common import Message, logger
@@ -16,6 +14,10 @@ from pydantic_prompter.exceptions import (
 
 
 class LLM:
+    @staticmethod
+    def clean_result(body: str):
+        return body
+
     def __init__(self, model_name):
         from pydantic_prompter.settings import Settings
 
@@ -87,7 +89,7 @@ class OpenAI(LLM):
 
 class BedRock(LLM, abc.ABC):
     @staticmethod
-    def _strip_wrapping_garbage(body: str):
+    def clean_result(body: str):
         body = body.replace("</json>", "")
         left = body.find("{")
         right = body.rfind("}")
@@ -108,7 +110,7 @@ class BedRock(LLM, abc.ABC):
     def format_messages(self, msgs: List[Message]) -> str:
         raise NotImplementedError
 
-    def build_prompt(self, messages: List[Message], scheme: dict):
+    def _build_prompt(self, messages: List[Message], scheme: dict):
         if "prompt_templates" not in self._template_path:
             logger.info(f"Using custom prompt from {self._template_path}")
         ant_template = open(self._template_path).read()
@@ -120,7 +122,7 @@ class BedRock(LLM, abc.ABC):
         return content
 
     def debug_prompt(self, messages: List[Message], scheme: dict) -> str:
-        return self.build_prompt(messages, scheme)
+        return self._build_prompt(messages, scheme)
 
     def _boto_invoke(self, body):
         try:
@@ -147,7 +149,7 @@ class BedRock(LLM, abc.ABC):
         return response
 
     def call(self, messages: List[Message], scheme: dict) -> str:
-        content = self.build_prompt(messages, scheme)
+        content = self._build_prompt(messages, scheme)
 
         body = json.dumps(
             {
@@ -161,8 +163,8 @@ class BedRock(LLM, abc.ABC):
         response = self._boto_invoke(body)
         response_body = json.loads(response.get("body").read().decode())
         logger.info(response_body)
-        res = self._strip_wrapping_garbage(response_body.get("completion"))
-        return res
+        # res = self.clean_result(response_body.get("completion"))
+        return response_body.get("completion")
 
 
 class BedRockAnthropic(BedRock):
@@ -199,7 +201,7 @@ class BedRockCohere(BedRock):
         return "\n".join(output)
 
     def call(self, messages: List[Message], scheme: dict) -> str:
-        content = self.build_prompt(messages, scheme)
+        content = self._build_prompt(messages, scheme)
 
         body = json.dumps(
             {
@@ -212,11 +214,20 @@ class BedRockCohere(BedRock):
 
         response_body = json.loads(response.get("body").read().decode())
         logger.info(response_body)
-        res = self._strip_wrapping_garbage(response_body["generations"][0]["text"])
-        return res
+        # res = self.clean_result(response_body["generations"][0]["text"])
+        return response_body["generations"][0]["text"]
 
 
 class BedRockLlama2(BedRock):
+    @staticmethod
+    def clean_result(body: str):
+        body = body.split("<json_schema>")[0]
+        body = body.replace("</json>", "")
+        left = body.find("{")
+        right = body.rfind("}")
+        j = body[left : right + 1]
+        return j
+
     @property
     def _template_path(self) -> str:
         return self.settings.template_paths.llama2
@@ -237,7 +248,7 @@ class BedRockLlama2(BedRock):
         return "\n".join(output)
 
     def call(self, messages: List[Message], scheme: dict) -> str:
-        content = self.build_prompt(messages, scheme)
+        content = self._build_prompt(messages, scheme)
 
         body = json.dumps(
             {
@@ -248,9 +259,8 @@ class BedRockLlama2(BedRock):
         )
         response = self._boto_invoke(body)
         response_body = json.loads(response.get("body").read().decode())
-        logger.info(response_body)
-        res = self._strip_wrapping_garbage(response_body.get("generation"))
-        return res
+        logger.debug(response_body)
+        return response_body.get("generation")
 
 
 class Cohere(BedRockCohere):
@@ -259,7 +269,7 @@ class Cohere(BedRockCohere):
             import cohere
 
             co = cohere.Client(api_key=self.settings.cohere_key)
-            content = self.build_prompt(messages, scheme)
+            content = self._build_prompt(messages, scheme)
 
             response = co.chat(
                 message=content,
@@ -273,6 +283,6 @@ class Cohere(BedRockCohere):
 
         answer = response.text
         logger.debug(f"Got answer: \n{answer}")
-        res = self._strip_wrapping_garbage(answer)
+        # res = self.clean_result(answer)
 
-        return res
+        return answer

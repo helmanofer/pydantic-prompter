@@ -1,4 +1,5 @@
 import logging
+from typing import Optional, List, Any, Dict
 
 from pydantic import BaseModel
 
@@ -16,3 +17,12 @@ class Message(BaseModel):
 
     def __str__(self):
         return f"{self.role}: {self.content}"
+
+
+class LLMDataAndResult(BaseModel):
+    inputs: Dict[str, str]
+    messages: Optional[List[Message]] = None
+    raw_result: Optional[str] = None
+    clean_result: Optional[str] = None
+    result: Optional[BaseModel] = None
+    error: Optional[Any] = None

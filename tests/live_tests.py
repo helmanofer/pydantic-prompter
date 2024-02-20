@@ -10,14 +10,13 @@ from pydantic_prompter.exceptions import (
 )
 from tests.data_for_tests import *
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 param_tests = pytest.mark.parametrize(
     "llm,model",
     [
         ("bedrock", "meta.llama2-70b-chat-v1"),
-        # ("bedrock", "meta.llama2-13b-chat-v1"),
+        ("bedrock", "meta.llama2-13b-chat-v1"),
         ("bedrock", "cohere.command-text-v14"),
         ("openai", "gpt-3.5-turbo"),
         ("bedrock", "anthropic.claude-instant-v1"),
