@@ -16,7 +16,7 @@ logger = logging.getLogger()
 param_tests = pytest.mark.parametrize(
     "llm,model",
     [
-        # ("bedrock", "meta.llama2-70b-chat-v1"),
+        ("bedrock", "meta.llama2-70b-chat-v1"),
         # ("bedrock", "meta.llama2-13b-chat-v1"),
         ("bedrock", "cohere.command-text-v14"),
         ("openai", "gpt-3.5-turbo"),
