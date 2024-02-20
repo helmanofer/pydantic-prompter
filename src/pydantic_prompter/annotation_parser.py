@@ -2,7 +2,6 @@ import json
 from json import JSONDecodeError
 from typing import Dict, Any
 
-import yaml
 from pydantic import ValidationError, ConfigDict
 
 from pydantic_prompter.common import logger, LLMDataAndResult
@@ -14,6 +13,7 @@ from pydantic_prompter.exceptions import (
 class AnnotationParser:
     @classmethod
     def get_parser(cls, function) -> "AnnotationParser":
+        # noinspection PyProtectedMember
         from pydantic._internal._model_construction import ModelMetaclass
 
         return_obj = function.__annotations__.get("return", None)
