@@ -8,7 +8,7 @@
 - meta.llama2-70b-chat-v1
 - meta.llama2-13b-chat-v1
 - anthropic.claude-instant-v1
-- anthropic.claude-v1
+- ~~anthropic.claude-v1~~
 - anthropic.claude-v2
 
 #### Cohere

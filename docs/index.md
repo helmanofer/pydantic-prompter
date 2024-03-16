@@ -49,6 +49,12 @@ For more advanced usage involving Jinja2 loops to inject conversation history, c
 --8<-- "examples/history_injection_jinja.py"
 ```
 
+#### Simple typings
+Use `int`, `float`, `bool` or `str`
+```py hl_lines="11"
+--8<-- "examples/simple_typings.py"
+```
+
 ## Best practices
 
 When using Pydantic Prompter, it is recommended to explicitly specify the parameter name you wish to retrieve, as demonstrated in the example below, where title is explicitly mentioned:

@@ -8,9 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-      # - run: pip install pdm
       - uses: pdm-project/setup-pdm@v3
+        with:
+          python-version: "3.10"
+          cache: true
       - run: pdm publish -u __token__ -P ${{ secrets.PYPI_PASSWORD }}

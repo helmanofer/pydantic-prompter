@@ -10,13 +10,19 @@ _root_path = Path(__file__).resolve().parent
 
 class TemplatePaths(BaseModel):
     anthropic: str = Field(
-        default=_root_path.joinpath("prompt_templates", "anthropic.jinja").as_posix()
+        default=_root_path.joinpath(
+            "prompt_templates", "{prompt_paths}", "anthropic.jinja"
+        ).as_posix()
     )
     cohere: str = Field(
-        default=_root_path.joinpath("prompt_templates", "cohere.jinja").as_posix()
+        default=_root_path.joinpath(
+            "prompt_templates", "{prompt_paths}", "cohere.jinja"
+        ).as_posix()
     )
     llama2: str = Field(
-        default=_root_path.joinpath("prompt_templates", "llama2.jinja").as_posix()
+        default=_root_path.joinpath(
+            "prompt_templates", "{prompt_paths}", "llama2.jinja"
+        ).as_posix()
     )
 
 
