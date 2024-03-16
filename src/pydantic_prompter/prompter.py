@@ -14,11 +14,11 @@ from pydantic_prompter.llm_provider import LLM
 
 
 class _Pr:
-    def __init__(self, function, llm: LLM, jinja: bool):
+    def __init__(self, function, llm: str, model_name: str, jinja: bool):
         self.jinja = jinja
         self.function = function
-        self.llm = llm
         self.parser = AnnotationParser.get_parser(function)
+        self.llm = LLM.get_llm(llm=llm, parser=self.parser, model_name=model_name)
 
     @retry(tries=3, delay=1, logger=logger, exceptions=(Retryable,))
     def __call__(self, *args, **inputs):
@@ -43,7 +43,9 @@ class _Pr:
 
     def build_string(self, **inputs) -> str:
         msgs = self._build_prompt(**inputs)
-        res = self.llm.debug_prompt(msgs, self.parser.llm_schema())
+        res = self.llm.debug_prompt(
+            msgs, self.parser.llm_schema() or self.parser.llm_return_type()
+        )
         return res
 
     def _build_prompt(self, **inputs) -> List[Message]:
@@ -69,9 +71,15 @@ class _Pr:
         return messages
 
     def call_llm(self, llm_data: LLMDataAndResult) -> LLMDataAndResult:
-        return_scheme_llm_str = self.parser.llm_schema()
+        if self.parser.llm_schema():
+            return_scheme_llm_str = self.parser.llm_schema()
+            ret_str = self.llm.call(llm_data.messages, scheme=return_scheme_llm_str)
+        else:
+            return_scheme_llm_str = self.parser.llm_return_type()
+            ret_str = self.llm.call(
+                llm_data.messages, return_type=return_scheme_llm_str
+            )
 
-        ret_str = self.llm.call(llm_data.messages, return_scheme_llm_str)
         llm_data.raw_result = ret_str
         res = self.llm.clean_result(ret_str)
         llm_data.clean_result = res
@@ -83,8 +91,14 @@ class _Pr:
 
 class Prompter:
     def __init__(self, llm: str, model_name: str, jinja=False):
+        self.model_name = model_name
+        self.llm = llm
         self.jinja = jinja
-        self.llm = LLM.get_llm(llm=llm, model_name=model_name)
 
     def __call__(self, function):
-        return _Pr(function=function, jinja=self.jinja, llm=self.llm)
+        return _Pr(
+            function=function,
+            jinja=self.jinja,
+            llm=self.llm,
+            model_name=self.model_name,
+        )

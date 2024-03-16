@@ -1,10 +1,11 @@
 import abc
 import json
 import random
-from typing import Dict, List
+from typing import List
 
 from jinja2 import Template
 
+from pydantic_prompter.annotation_parser import AnnotationParser
 from pydantic_prompter.common import Message, logger
 from pydantic_prompter.exceptions import (
     CohereAuthenticationError,
@@ -18,34 +19,40 @@ class LLM:
     def clean_result(body: str):
         return body
 
-    def __init__(self, model_name):
+    def __init__(self, model_name: str, parser: AnnotationParser):
         from pydantic_prompter.settings import Settings
 
+        self.parser: AnnotationParser = parser
         self.settings = Settings()
         self.model_name = model_name
 
-    def debug_prompt(self, messages: List[Message], scheme: dict):
+    def debug_prompt(self, messages: List[Message], scheme: dict | str):
         raise NotImplementedError
 
-    def call(self, messages: List[Message], scheme: Dict) -> str:
+    def call(
+        self,
+        messages: List[Message],
+        scheme: dict | None = None,
+        return_type: str | None = None,
+    ) -> str:
         raise NotImplementedError
 
     @classmethod
-    def get_llm(cls, llm: str, model_name: str):
+    def get_llm(cls, llm: str, model_name: str, parser: AnnotationParser) -> "LLM":
         if llm == "openai":
-            llm_inst = OpenAI(model_name)
+            llm_inst = OpenAI(model_name, parser)
         elif llm == "bedrock" and model_name.startswith("anthropic"):
             logger.debug("Using bedrock provider with Anthropic model")
-            llm_inst = BedRockAnthropic(model_name)
+            llm_inst = BedRockAnthropic(model_name, parser)
         elif llm == "bedrock" and model_name.startswith("cohere"):
             logger.debug("Using bedrock provider with Cohere model")
-            llm_inst = BedRockCohere(model_name)
+            llm_inst = BedRockCohere(model_name, parser)
         elif llm == "bedrock" and model_name.startswith("meta"):
             logger.debug("Using bedrock provider with Cohere model")
-            llm_inst = BedRockLlama2(model_name)
+            llm_inst = BedRockLlama2(model_name, parser)
         elif llm == "cohere" and model_name.startswith("command"):
             logger.debug("Using Cohere model")
-            llm_inst = Cohere(model_name)
+            llm_inst = Cohere(model_name, parser)
         else:
             raise Exception(f"Model not implemented {llm}, {model_name}")
         logger.debug(
@@ -63,9 +70,41 @@ class OpenAI(LLM):
     def debug_prompt(self, messages: List[Message], scheme: dict) -> str:
         return json.dumps(self.to_openai_format(messages), indent=4, sort_keys=True)
 
-    def call(self, messages: List[Message], scheme: dict) -> str:
+    @staticmethod
+    def _create_schema(scheme: str) -> dict:
+        if scheme == "str":
+            ret = "string"
+        elif scheme == "int":
+            ret = "integer"
+        elif scheme == "bool":
+            ret = "boolean"
+        elif scheme == "float":
+            ret = "float"
+        else:
+            raise
+
+        simple = {
+            "name": "Simple",
+            "parameters": {
+                "properties": {"res": {"title": "Res", "type": ret}},
+                "required": ["res"],
+                "title": "Simple",
+                "type": "object",
+            },
+        }
+        return simple
+
+    def call(
+        self,
+        messages: List[Message],
+        scheme: dict | None = None,
+        return_type: str | None = None,
+    ) -> str:
         from openai import OpenAI, OpenAIError
         from openai import AuthenticationError, APIConnectionError
+
+        if return_type:
+            scheme = self._create_schema(return_type)
 
         _function_call = {
             "name": scheme["name"],
@@ -90,11 +129,16 @@ class OpenAI(LLM):
 class BedRock(LLM, abc.ABC):
     @staticmethod
     def clean_result(body: str):
+        body = body.split("<json_schema>")[0]
         body = body.replace("</json>", "")
-        left = body.find("{")
-        right = body.rfind("}")
-        j = body[left : right + 1]
-        return j
+        body = body.replace("</str>", "")
+        body = body.replace("</int>", "")
+        body = body.replace("</bool>", "")
+        if "{" in body and "}" in body:
+            left = body.find("{")
+            right = body.rfind("}")
+            body = body[left : right + 1]  # noqa
+        return body
 
     @property
     @abc.abstractmethod
@@ -110,18 +154,20 @@ class BedRock(LLM, abc.ABC):
     def format_messages(self, msgs: List[Message]) -> str:
         raise NotImplementedError
 
-    def _build_prompt(self, messages: List[Message], scheme: dict):
+    def _build_prompt(self, messages: List[Message], params: dict | str):
         if "prompt_templates" not in self._template_path:
             logger.info(f"Using custom prompt from {self._template_path}")
         ant_template = open(self._template_path).read()
-        scheme_ = json.dumps(scheme["parameters"], indent=4)
-        # schema_ = yaml.safe_dump(scheme["parameters"])
+        if isinstance(params, dict):
+            scheme_ = json.dumps(params, indent=4)
+        else:
+            scheme_ = params
         ant_msgs = self.format_messages(messages)
         template = Template(ant_template, keep_trailing_newline=True)
         content = template.render(schema=scheme_, question=ant_msgs).strip()
         return content
 
-    def debug_prompt(self, messages: List[Message], scheme: dict) -> str:
+    def debug_prompt(self, messages: List[Message], scheme: dict | str) -> str:
         return self._build_prompt(messages, scheme)
 
     def _boto_invoke(self, body):
@@ -148,8 +194,13 @@ class BedRock(LLM, abc.ABC):
 
         return response
 
-    def call(self, messages: List[Message], scheme: dict) -> str:
-        content = self._build_prompt(messages, scheme)
+    def call(
+        self,
+        messages: List[Message],
+        scheme: dict | None = None,
+        return_type: str | None = None,
+    ) -> str:
+        content = self._build_prompt(messages, scheme or return_type)
 
         body = json.dumps(
             {
@@ -163,14 +214,16 @@ class BedRock(LLM, abc.ABC):
         response = self._boto_invoke(body)
         response_body = json.loads(response.get("body").read().decode())
         logger.info(response_body)
-        # res = self.clean_result(response_body.get("completion"))
         return response_body.get("completion")
 
 
 class BedRockAnthropic(BedRock):
     @property
     def _template_path(self):
-        return self.settings.template_paths.anthropic
+        path = self.settings.template_paths.anthropic.replace(
+            "{prompt_paths}", self.parser.prompts_path
+        )
+        return path
 
     @property
     def _stop_sequence(self):
@@ -187,7 +240,10 @@ class BedRockAnthropic(BedRock):
 class BedRockCohere(BedRock):
     @property
     def _template_path(self) -> str:
-        return self.settings.template_paths.cohere
+        path = self.settings.template_paths.cohere.replace(
+            "{prompt_paths}", self.parser.prompts_path
+        )
+        return path
 
     @property
     def _stop_sequence(self) -> str:
@@ -200,8 +256,13 @@ class BedRockCohere(BedRock):
             output.append(f"{role_converter[msg.role]}: {msg.content}")
         return "\n".join(output)
 
-    def call(self, messages: List[Message], scheme: dict) -> str:
-        content = self._build_prompt(messages, scheme)
+    def call(
+        self,
+        messages: List[Message],
+        scheme: dict | None = None,
+        return_type: str | None = None,
+    ) -> str:
+        content = self._build_prompt(messages, scheme or return_type)
 
         body = json.dumps(
             {
@@ -214,23 +275,17 @@ class BedRockCohere(BedRock):
 
         response_body = json.loads(response.get("body").read().decode())
         logger.info(response_body)
-        # res = self.clean_result(response_body["generations"][0]["text"])
         return response_body["generations"][0]["text"]
 
 
 class BedRockLlama2(BedRock):
-    @staticmethod
-    def clean_result(body: str):
-        body = body.split("<json_schema>")[0]
-        body = body.replace("</json>", "")
-        left = body.find("{")
-        right = body.rfind("}")
-        j = body[left : right + 1]
-        return j
 
     @property
     def _template_path(self) -> str:
-        return self.settings.template_paths.llama2
+        path = self.settings.template_paths.llama2.replace(
+            "{prompt_paths}", self.parser.prompts_path
+        )
+        return path
 
     @property
     def _stop_sequence(self) -> str:
@@ -242,13 +297,18 @@ class BedRockLlama2(BedRock):
             if msg.role == "system":
                 output.append(f"<<SYS>> {msg.content} <</SYS>>")
             if msg.role == "assistant":
-                output.append(f"{msg.content} </s>")
+                output.append(f"{msg.content}")
             if msg.role == "user":
-                output.append(f"{msg.content}  [/INST]")
+                output.append(f"[INST] {msg.content} [/INST]")
         return "\n".join(output)
 
-    def call(self, messages: List[Message], scheme: dict) -> str:
-        content = self._build_prompt(messages, scheme)
+    def call(
+        self,
+        messages: List[Message],
+        scheme: dict | None = None,
+        return_type: str | None = None,
+    ) -> str:
+        content = self._build_prompt(messages, scheme or return_type)
 
         body = json.dumps(
             {
@@ -264,12 +324,25 @@ class BedRockLlama2(BedRock):
 
 
 class Cohere(BedRockCohere):
-    def call(self, messages: List[Message], scheme: dict) -> str:
+    def clean_result(self, body: str):
+        body = super().clean_result(body)
+        body = body.replace("<json>", "")
+        body = body.replace("<str>", "")
+        body = body.replace("<int>", "")
+        body = body.replace("<bool>", "")
+        return body
+
+    def call(
+        self,
+        messages: List[Message],
+        scheme: dict | None = None,
+        return_type: str | None = None,
+    ) -> str:
         try:
             import cohere
 
             co = cohere.Client(api_key=self.settings.cohere_key)
-            content = self._build_prompt(messages, scheme)
+            content = self._build_prompt(messages, scheme or return_type)
 
             response = co.chat(
                 message=content,
@@ -283,6 +356,4 @@ class Cohere(BedRockCohere):
 
         answer = response.text
         logger.debug(f"Got answer: \n{answer}")
-        # res = self.clean_result(answer)
-
         return answer
