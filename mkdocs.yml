@@ -8,6 +8,10 @@ theme:
   name: material
   features:
     - content.code.copy
+extra:
+  analytics:
+    provider: google
+    property: G-YYQGC0MEXY
 
 markdown_extensions:
   - pymdownx.highlight:

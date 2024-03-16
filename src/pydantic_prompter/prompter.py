@@ -46,6 +46,7 @@ class _Pr:
         res = self.llm.debug_prompt(
             msgs, self.parser.llm_schema() or self.parser.llm_return_type()
         )
+
         return res
 
     def _build_prompt(self, **inputs) -> List[Message]:

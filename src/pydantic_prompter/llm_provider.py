@@ -168,6 +168,7 @@ class BedRock(LLM, abc.ABC):
         return content
 
     def debug_prompt(self, messages: List[Message], scheme: dict | str) -> str:
+
         return self._build_prompt(messages, scheme)
 
     def _boto_invoke(self, body):
@@ -275,6 +276,7 @@ class BedRockCohere(BedRock):
 
         response_body = json.loads(response.get("body").read().decode())
         logger.info(response_body)
+
         return response_body["generations"][0]["text"]
 
 
@@ -356,4 +358,5 @@ class Cohere(BedRockCohere):
 
         answer = response.text
         logger.debug(f"Got answer: \n{answer}")
+
         return answer

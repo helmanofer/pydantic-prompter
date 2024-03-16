@@ -31,6 +31,7 @@ class AnnotationParser:
 
     def __init__(self, function):
         self.return_cls = function.__annotations__["return"]
+        self.return_cls.model_config = ConfigDict(coerce_numbers_to_str=True)
 
     @abc.abstractmethod
     def llm_return_type(self) -> str:
