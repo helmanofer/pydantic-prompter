@@ -14,7 +14,7 @@ class MyChildren(BaseModel):
     children_names: List[str] = Field(description="The names of my children")
 
 
-@Prompter(llm="bedrock", model_name="anthropic.claude-v1")
+@Prompter(llm="bedrock", model_name="anthropic.claude-v2")
 def me_and_mu_children(name) -> MyChildren:
     """
     - user: hi, my name is {name} and my children are called, aa, bb, cc
