@@ -20,7 +20,7 @@ class Message(BaseModel):
 
 
 class LLMDataAndResult(BaseModel):
-    inputs: Dict[str, str]
+    inputs: Dict[str, Any]
     messages: Optional[List[Message]] = None
     raw_result: Optional[str] = None
     clean_result: Optional[str] = None
