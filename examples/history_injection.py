@@ -19,6 +19,7 @@ def search_query(history) -> QueryGPTResponse:
 
 
 history = """
+- user: Hi
 - assistant: what genre do you want to watch?
 - user: Comedy
 - assistant: do you want a movie or series?

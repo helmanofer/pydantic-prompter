@@ -10,6 +10,7 @@
 - anthropic.claude-instant-v1
 - ~~anthropic.claude-v1~~
 - anthropic.claude-v2
+- anthropic.claude-3-sonnet-20240229-v1:0
 
 #### Cohere
 - command

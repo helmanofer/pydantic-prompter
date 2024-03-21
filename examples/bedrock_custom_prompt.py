@@ -9,7 +9,7 @@ logging.basicConfig(
 )
 logging.getLogger("pydantic_prompter").setLevel(logging.DEBUG)
 
-os.environ["TEMPLATE_PATHS__ANTHROPIC"] = "./anthropic_custom.jinja"
+os.environ["TEMPLATE_PATHS__COHERE"] = "./cohere_custom.jinja"
 
 
 class MyChildren(BaseModel):
