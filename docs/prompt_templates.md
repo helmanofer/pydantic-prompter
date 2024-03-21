@@ -6,7 +6,7 @@ Relevant to Anthropic models
 --8<-- "examples/bedrock_custom_prompt.py"
 ```
 ### Predefined prompts
-#### Anthropic
+#### Cohere
 ```txt
---8<-- "src/pydantic_prompter/prompt_templates/anthropic.jinja"
+--8<-- "src/pydantic_prompter/prompt_templates/pydantic/cohere.jinja"
 ```

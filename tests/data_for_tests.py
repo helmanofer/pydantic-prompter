@@ -3,7 +3,7 @@ from typing import List
 from pydantic import BaseModel, Field
 
 
-class Hey(BaseModel):
+class PersonalInfo(BaseModel):
     name: str = Field(description="the name")
     children: List[str] = Field(description="list of my children")
 
