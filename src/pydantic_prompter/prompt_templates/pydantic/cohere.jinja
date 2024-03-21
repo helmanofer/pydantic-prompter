@@ -1,13 +1,11 @@
-User: Act like a REST API that answers the question contained in <question> tags.
-Your response should be within <json></json> xml tags in JSON format with the schema specified in the <json_schema> tags.
+System: Act like a REST API that answers the question contained in <question> tags.
+Your response should be within a JSON markdown block in JSON format with the schema specified in the <json_schema> tags.
 DO NOT add any other text other than the JSON response
 
 <json_schema>
 {{ schema }}
 </json_schema>
 
-Chatbot: OK
-
 {{ question }}
 
-Chatbot: <json>
+Chatbot: ```json\n

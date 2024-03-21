@@ -10,7 +10,8 @@ from pydantic_prompter.exceptions import (
     BadRoleError,
     Retryable,
 )
-from pydantic_prompter.llm_provider import LLM
+from pydantic_prompter.llm_providers import get_llm
+from pydantic_prompter.llm_providers.base import LLM
 
 
 class _Pr:
@@ -18,7 +19,7 @@ class _Pr:
         self.jinja = jinja
         self.function = function
         self.parser = AnnotationParser.get_parser(function)
-        self.llm = LLM.get_llm(llm=llm, parser=self.parser, model_name=model_name)
+        self.llm = get_llm(llm=llm, parser=self.parser, model_name=model_name)
 
     @retry(tries=3, delay=1, logger=logger, exceptions=(Retryable,))
     def __call__(self, *args, **inputs):
@@ -26,7 +27,7 @@ class _Pr:
             raise ArgumentError("please use only kwargs")
 
         llm_data = LLMDataAndResult(inputs=inputs)
-        llm_data.messages = self._build_prompt(**inputs)
+        llm_data.messages = self._parse_function_to_messages(**inputs)
         logger.debug(f"Calling with prompt:\n{self.build_string(**inputs)}")
         res: LLMDataAndResult = self.call_llm(llm_data)
 
@@ -42,14 +43,14 @@ class _Pr:
         return res.result
 
     def build_string(self, **inputs) -> str:
-        msgs = self._build_prompt(**inputs)
+        msgs = self._parse_function_to_messages(**inputs)
         res = self.llm.debug_prompt(
             msgs, self.parser.llm_schema() or self.parser.llm_return_type()
         )
 
         return res
 
-    def _build_prompt(self, **inputs) -> List[Message]:
+    def _parse_function_to_messages(self, **inputs) -> List[Message]:
         if self.jinja:
             template = Template(self.function.__doc__, keep_trailing_newline=True)
             content = template.render(**inputs)

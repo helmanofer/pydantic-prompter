@@ -56,7 +56,7 @@ def test_basic_2():
 
 def test_pydantic():
     @Prompter(jinja=True, llm="openai", model_name="gpt-3.5-turbo")
-    def bbb(name) -> Hey:
+    def bbb(name) -> PersonalInfo:
         """
         - system: you are a writer
         - user: hi, my name is {{ name }} and my children are called, aa, bb, cc
@@ -72,7 +72,7 @@ def test_pydantic():
         ),
         Message(role="user", content="what is my name and my children name"),
     ]
-    res = bbb._build_prompt(name="Ofer")
+    res = bbb._parse_function_to_messages(name="Ofer")
     assert res == expected
 
 
@@ -94,7 +94,7 @@ def test_generic():
             role="user", content="how many children do I have and what's their names?"
         ),
     ]
-    res = aaa._build_prompt(name="Ofer")
+    res = aaa._parse_function_to_messages(name="Ofer")
     assert res == expected
 
 
@@ -114,7 +114,7 @@ def test_non_yaml():
         "- assistant: do you want a movie or series?",
         "- user: Movie",
     ]
-    res = search_query._build_prompt(history="\n".join(history))
+    res = search_query._parse_function_to_messages(history="\n".join(history))
     expected = [
         Message(role="assistant", content="what genre do you want to watch?"),
         Message(role="user", content="Comedy"),
@@ -157,13 +157,15 @@ def test_complex_question():
         Message(role="user", content="Query - Martial Arts, Action"),
     ]
 
-    res = rank_recommendation._build_prompt(json_entries=entries, query=query)
+    res = rank_recommendation._parse_function_to_messages(
+        json_entries=entries, query=query
+    )
     assert res == expected
 
 
 def test_args_error():
     @Prompter(llm="cohere", model_name="command")
-    def bbb(name) -> Hey:
+    def bbb(name) -> PersonalInfo:
         """
         - system: you are a writer
         - user:
