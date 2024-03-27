@@ -97,7 +97,7 @@ class SimpleStringParser(AnnotationParser):
 
     def cast_result(self, llm_data: LLMDataAndResult) -> LLMDataAndResult:
         res = llm_data.clean_result
-        if "{" in res and "}" in res:
+        if "{" in res and "}" in res and '"res":' in res:
             try:
                 res = json.loads(res, strict=False)["res"]
             except JSONDecodeError as e:
