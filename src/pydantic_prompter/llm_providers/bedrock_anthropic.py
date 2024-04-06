@@ -60,7 +60,7 @@ class BedRockAnthropic(BedRock):
                     DO NOT add any other text other than the STRING response
                     """
 
-        final_messages = [m.dict() for m in messages]
+        final_messages = [m.model_dump() for m in messages]
         final_messages = self.fix_messages(final_messages)
         body = json.dumps(
             {

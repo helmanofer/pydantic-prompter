@@ -73,10 +73,10 @@ class _Pr:
         return messages
 
     def call_llm(self, llm_data: LLMDataAndResult) -> LLMDataAndResult:
-        if self.parser.llm_schema():
+        if self.parser.llm_schema():  # pydantic schema
             return_scheme_llm_str = self.parser.llm_schema()
             ret_str = self.llm.call(llm_data.messages, scheme=return_scheme_llm_str)
-        else:
+        else:  # simple typings
             return_scheme_llm_str = self.parser.llm_return_type()
             ret_str = self.llm.call(
                 llm_data.messages, return_type=return_scheme_llm_str

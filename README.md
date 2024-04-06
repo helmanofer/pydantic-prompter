@@ -13,6 +13,17 @@ Other alternatives [Outlines](https://github.com/outlines-dev/outlines) and [Jso
 
 📄 Documentation https://helmanofer.github.io/pydantic-prompter
 
+### Why should you use Pydantic Prompter
+💻 **Seamless LLM Integration**: Pydantic Prompter supported multiple LLM providers, including Cohere, Bedrock, and OpenAI, right out of the box. This meant we could easily switch between providers without modifying our code, ensuring flexibility and portability.
+
+📦 **Structured Outputs**: By leveraging Pydantic models, Pydantic Prompter automatically parsed the LLM's output into structured Python objects. Manual parsing became a thing of the past, and we enjoyed consistently formatted data that was a breeze to work with.
+
+✍️ **Easy Prompt Engineering**: Crafting effective prompts is an art, and Pydantic Prompter made us all masters. By defining prompts using Python classes and string interpolation, we created readable, maintainable, and reusable prompts.
+
+🔧 **Reusable Components**: Pydantic Prompter encouraged a modular approach, allowing us to define reusable prompt components such as instructions, examples, and constraints. This promoted code reuse and made maintaining our code effortless.
+
+🐛 **Logging and Debugging**: Built-in logging and debugging features meant we could quickly identify and resolve any issues, ensuring a smooth and efficient development process, free of bugs and errors.
+
 ### Installation
 To install Pydantic Prompter, use the following command:
 
