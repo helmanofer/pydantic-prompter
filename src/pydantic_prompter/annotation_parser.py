@@ -71,7 +71,7 @@ class PydanticParser(AnnotationParser):
         }
 
     def llm_schema(self) -> dict:
-        return_scheme = self.return_cls.model_json_schema()
+        return_scheme = self.return_cls.model_json_schema(mode="serialization")
         return self.pydantic_schema(return_scheme)
 
     def cast_result(self, llm_data: LLMDataAndResult) -> LLMDataAndResult:
