@@ -1,7 +1,7 @@
 site_name: Pydantic Prompter Docs
 nav:
-  - Home: ../README.md
-#  - Home: index.md
+#  - Home: ../README.md
+  - Home: index.md
   - AI services: ai_services.md
   - Prompts: prompt_templates.md
   - Supported models: supported_models.md
