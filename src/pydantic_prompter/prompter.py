@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional, Dict
 
 from jinja2 import Template
 from retry import retry
@@ -15,11 +15,11 @@ from pydantic_prompter.llm_providers.base import LLM
 
 
 class _Pr:
-    def __init__(self, function, llm: str, model_name: str, jinja: bool):
+    def __init__(self, function, llm: str, model_name: str, jinja: bool, model_settings: Optional[Dict] = None):
         self.jinja = jinja
         self.function = function
         self.parser = AnnotationParser.get_parser(function)
-        self.llm = get_llm(llm=llm, parser=self.parser, model_name=model_name)
+        self.llm = get_llm(llm=llm, parser=self.parser, model_name=model_name, model_settings=model_settings)
 
     @retry(tries=3, delay=1, logger=logger, exceptions=(Retryable,))
     def __call__(self, *args, **inputs):
@@ -92,10 +92,11 @@ class _Pr:
 
 
 class Prompter:
-    def __init__(self, llm: str, model_name: str, jinja=False):
+    def __init__(self, llm: str, model_name: str, jinja=False, model_settings: Optional[Dict] = None):
         self.model_name = model_name
         self.llm = llm
         self.jinja = jinja
+        self.model_settings = model_settings
 
     def __call__(self, function):
         return _Pr(
@@ -103,4 +104,5 @@ class Prompter:
             jinja=self.jinja,
             llm=self.llm,
             model_name=self.model_name,
+            model_settings=self.model_settings,
         )
