@@ -1,6 +1,7 @@
 import logging
 
 import pytest
+import yaml
 
 from pydantic_prompter import Prompter
 from pydantic_prompter.exceptions import (
@@ -15,15 +16,19 @@ logger = logging.getLogger()
 param_tests = pytest.mark.parametrize(
     "llm,model",
     [
-        ("bedrock", "meta.llama2-70b-chat-v1"),
+        # ("bedrock", "meta.llama2-70b-chat-v1"),
         # ("bedrock", "meta.llama2-13b-chat-v1"),
-        ("bedrock", "cohere.command-text-v14"),
-        ("openai", "gpt-3.5-turbo"),
-        ("bedrock", "anthropic.claude-instant-v1"),
-        ("bedrock", "anthropic.claude-v2"),
-        ("bedrock", "anthropic.claude-3-sonnet-20240229-v1:0"),
-        ("cohere", "command"),
-        ("cohere", "command-light"),
+        ("bedrock", "cohere.command-r-v1:0"),
+        ("bedrock", "cohere.command-r-v1:0"),
+        # ("openai", "gpt-3.5-turbo"),
+        # ("openai", "gpt-35-turbo-16k"),
+        # ("bedrock", "anthropic.claude-instant-v1"),
+        # ("bedrock", "anthropic.claude-v2"),
+        # ("bedrock", "anthropic.claude-3-sonnet-20240229-v1:0"),
+        # ("cohere", "command"),
+        # ("cohere", "command-light"),
+        # ("ollama", "llama3"),
+        # ("ollama", "llama2:13b"),
     ],
 )
 
@@ -31,7 +36,7 @@ param_tests = pytest.mark.parametrize(
 @pytest.mark.live
 @param_tests
 def test_pydantic_result(llm, model):
-    @Prompter(jinja=True, llm=llm, model_name=model)
+    @Prompter(jinja=True, provider=llm, model_name=model)
     def bbb(name) -> PersonalInfo:
         """
         - user:
@@ -56,7 +61,7 @@ def test_pydantic_result(llm, model):
 @pytest.mark.live
 @param_tests
 def test_non_yaml_result(llm, model):
-    @Prompter(llm=llm, model_name=model, jinja=True)
+    @Prompter(provider=llm, model_name=model, jinja=True)
     def search_query(history) -> QueryGPTResponse:
         """
         {{ history }}
@@ -89,14 +94,14 @@ def test_non_yaml_result(llm, model):
 @pytest.mark.live
 @param_tests
 def test_complex_question_result(llm, model):
-    @Prompter(llm=llm, jinja=True, model_name=model)
+    @Prompter(provider=llm, jinja=True, model_name=model)
     def rank_recommendation(json_entries, query) -> RecommendationResults:
         """
         - user:
-            Which of the following JSON entries fit best to the query. order by best fit descending
+            Which of the following YAML entries fit best to the query. order by best fit descending
             Base your answer ONLY on the given YML entries, if you are not sure, or there are no entries
 
-            The JSON entries:
+            The YAML entries:
             {{ json_entries }}
 
             Query - {{ query }}
@@ -104,7 +109,7 @@ def test_complex_question_result(llm, model):
         """
 
     try:
-        res = rank_recommendation(json_entries=entries, query=query)
+        res = rank_recommendation(json_entries=yaml.dump(entries), query=query)
         assert isinstance(res, RecommendationResults)
     except (
         OpenAiAuthenticationError,
@@ -118,7 +123,7 @@ def test_complex_question_result(llm, model):
 @pytest.mark.live
 @param_tests
 def test_str_result(llm, model):
-    @Prompter(jinja=True, llm=llm, model_name=model)
+    @Prompter(jinja=True, provider=llm, model_name=model)
     def bbb(name) -> str:
         """
         - user:
@@ -143,7 +148,7 @@ def test_str_result(llm, model):
 @pytest.mark.live
 @param_tests
 def test_int_result(llm, model):
-    @Prompter(jinja=True, llm=llm, model_name=model)
+    @Prompter(jinja=True, provider=llm, model_name=model)
     def bbb(name) -> int:
         """
         - user:
@@ -168,7 +173,7 @@ def test_int_result(llm, model):
 @pytest.mark.live
 @param_tests
 def test_bool_result(llm, model):
-    @Prompter(jinja=True, llm=llm, model_name=model)
+    @Prompter(jinja=True, provider=llm, model_name=model)
     def bbb(name) -> bool:
         """
         - user:

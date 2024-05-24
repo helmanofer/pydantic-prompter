@@ -28,6 +28,8 @@ class TemplatePaths(BaseModel):
 
 class Settings(BaseSettings):
     openai_api_key: Optional[str] = None
+    azure_openai_api_key: Optional[str] = None
+    azure_endpoint: Optional[str] = None
     template_paths: TemplatePaths = TemplatePaths()
     aws_default_region: str = "us-east-1"
     aws_profile: Optional[str] = None

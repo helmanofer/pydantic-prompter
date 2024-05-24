@@ -14,7 +14,7 @@ class MyChildren(BaseModel):
     children_names: List[str] = Field(description="The names of my children")
 
 
-@Prompter(llm="cohere", model_name="command")
+@Prompter(provider="cohere", model_name="command")
 def me_and_mu_children(name) -> MyChildren:
     """
     - user: hi, my name is {name} and my children are called, aa, bb, cc, dd, ee

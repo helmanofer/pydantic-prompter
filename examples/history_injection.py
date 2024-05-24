@@ -7,7 +7,7 @@ class QueryGPTResponse(BaseModel):
     google_like_search_term: str
 
 
-@Prompter(llm="openai", model_name="gpt-3.5-turbo")
+@Prompter(provider="openai", model_name="gpt-3.5-turbo")
 def search_query(history) -> QueryGPTResponse:
     """
     {history}

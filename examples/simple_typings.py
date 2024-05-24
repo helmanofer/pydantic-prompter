@@ -7,7 +7,7 @@ os.environ["AWS_SECRET_ACCESS_KEY"] = "..."
 os.environ["AWS_SESSION_TOKEN"] = "..."
 
 
-@Prompter(llm="cohere", model_name="command")
+@Prompter(provider="cohere", model_name="command")
 def me_and_mu_children(name) -> int:
     """
     - user: hi, my name is {name} and my children are called, aa, bb, cc, dd, ee

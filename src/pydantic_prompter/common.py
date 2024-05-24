@@ -26,3 +26,4 @@ class LLMDataAndResult(BaseModel):
     clean_result: Optional[str] = None
     result: Optional[BaseModel] = None
     error: Optional[Any] = None
+    retries: int = 0

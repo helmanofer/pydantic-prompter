@@ -64,11 +64,12 @@ class RecommendationResults(BaseModel):
 
 Now, let's create a Pydantic Prompter function using the `@Prompter` decorator. 
 You can define your prompt as a YAML string with Jinja2 templating or simple string formatting:
+
 ```py
 from pydantic_prompter import Prompter
 
 
-@Prompter(llm="openai", jinja=True, model_name="gpt-3.5-turbo-16k")
+@Prompter(provider="openai", jinja=True, model_name="gpt-3.5-turbo-16k")
 def rank_recommendation(entries, query) -> RecommendationResults:
     """
     - system: You are a movie ranking expert

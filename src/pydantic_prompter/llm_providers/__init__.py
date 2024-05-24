@@ -1,30 +1,45 @@
-from pydantic_prompter.annotation_parser import AnnotationParser
 from pydantic_prompter.common import logger
-from pydantic_prompter.llm_providers.bedrock_anthropic import BedRockAnthropic
-from pydantic_prompter.llm_providers.bedrock_cohere import BedRockCohere
-from pydantic_prompter.llm_providers.bedrock_llama2 import BedRockLlama2
-from pydantic_prompter.llm_providers.cohere import Cohere
-from pydantic_prompter.llm_providers.openai import OpenAI
+from pydantic_prompter.llm_providers.model import (
+    Model,
+    Llama2,
+    CohereCommand,
+    Claude,
+    GPT,
+)
+from pydantic_prompter.llm_providers.provider import (
+    Bedrock,
+    Ollama,
+    OpenAI,
+    Provider,
+    Cohere,
+)
 
 
-def get_llm(llm: str, model_name: str, parser: AnnotationParser) -> "LLM":
-    if llm == "openai":
-        llm_inst = OpenAI(model_name, parser)
-    elif llm == "bedrock" and model_name.startswith("anthropic"):
-        logger.debug("Using bedrock provider with Anthropic model")
-        llm_inst = BedRockAnthropic(model_name, parser)
-    elif llm == "bedrock" and model_name.startswith("cohere"):
-        logger.debug("Using bedrock provider with Cohere model")
-        llm_inst = BedRockCohere(model_name, parser)
-    elif llm == "bedrock" and model_name.startswith("meta"):
-        logger.debug("Using bedrock provider with Cohere model")
-        llm_inst = BedRockLlama2(model_name, parser)
-    elif llm == "cohere" and model_name.startswith("command"):
-        logger.debug("Using Cohere model")
-        llm_inst = Cohere(model_name, parser)
+def get_llm(provider_name: str, model_name: str) -> Provider:
+    if "llama2" in model_name:
+        model_ = Llama2(model_name)
+    elif "llama3" in model_name:
+        model_ = Llama2(model_name)
+    elif "cohere" in model_name or "command" in model_name:
+        model_ = CohereCommand(model_name)
+    elif "claude" in model_name:
+        model_ = Claude(model_name)
+    elif "gpt" in model_name.lower():
+        model_ = GPT(model_name)
     else:
-        raise Exception(f"Model not implemented {llm}, {model_name}")
+        raise Exception(f"Model not implemented:{model_name}")
+
+    if provider_name == "bedrock":
+        provider_ = Bedrock(model=model_)
+    elif provider_name == "ollama":
+        provider_ = Ollama(model=model_)
+    elif provider_name == "openai":
+        provider_ = OpenAI(model=model_)
+    elif provider_name == "cohere":
+        provider_ = Cohere(model=model_)
+    else:
+        raise Exception(f"Provider not implemented: {provider_name}")
     logger.debug(
-        f"Using {llm_inst.__class__.__name__} provider with model {model_name}"
+        f"Using {provider_.__class__.__name__} provider with model {model_name}"
     )
-    return llm_inst
+    return provider_
