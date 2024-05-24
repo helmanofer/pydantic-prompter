@@ -1,13 +1,29 @@
 import json
 import random
 from typing import List, Union
+from typing import List, Optional, Dict
 
 from pydantic_prompter.common import Message, logger
 from pydantic_prompter.llm_providers.bedrock_base import BedRock
+from pydantic_prompter.annotation_parser import AnnotationParser
 
 
 class BedRockAnthropic(BedRock):
-    def _build_prompt(self, messages: List[Message], params: Union[dict, str]):
+    def __init__(
+        self,
+        model_name: str,
+        parser: AnnotationParser,
+        model_settings: Optional[Dict] = None,
+    ):
+        super().__init__(model_name, parser)
+        self.model_settings = model_settings or {
+            "temperature": random.uniform(0, 1),
+            "max_tokens": 8000,
+            "stop_sequences": ["Human:"],
+            "anthropic_version": "bedrock-2023-05-31",
+        }
+
+    def _build_prompt(self, messages: List[Message], params: dict | str):
         return "\n".join([m.content for m in messages])
 
     @property
@@ -62,18 +78,21 @@ class BedRockAnthropic(BedRock):
 
         final_messages = [m.model_dump() for m in messages]
         final_messages = self.fix_messages(final_messages)
-        body = json.dumps(
-            {
-                "system": system_message,
-                "max_tokens": 8000,
-                "messages": final_messages,
-                "stop_sequences": [self._stop_sequence],
-                "temperature": random.uniform(0, 1),
-                "anthropic_version": "bedrock-2023-05-31",
-            }
-        )
 
-        response = self._boto_invoke(body)
+        # Ensure stop_sequences and anthropic_version are always included
+        body = {
+            "system": system_message,
+            "messages": final_messages,
+            "stop_sequences": self.model_settings.get(
+                "stop_sequences", [self._stop_sequence]
+            ),
+            "anthropic_version": self.model_settings.get(
+                "anthropic_version", "bedrock-2023-05-31"
+            ),
+            **self.model_settings,
+        }
+
+        response = self._boto_invoke(json.dumps(body))
         res = response.get("body").read().decode()
         response_body = json.loads(res)
 
