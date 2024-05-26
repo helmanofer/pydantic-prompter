@@ -79,7 +79,7 @@ class PydanticParser(AnnotationParser):
             from json_repair import json_repair
 
             j = json_repair.loads(llm_data.raw_result)
-            llm_data.clean_json_result = j
+            llm_data.clean_result = j
             res = self.return_cls(**j)
             llm_data.result = res
         except (ValidationError, JSONDecodeError, RecursionError) as e:
@@ -123,8 +123,8 @@ class SimpleStringParser(AnnotationParser):
             if isinstance(j, dict):
                 res = j.get("res", j)
         if not res:
-            llm_data.clean_json_result = self.clean_result(llm_data.raw_result)
-            res = llm_data.clean_json_result
+            llm_data.clean_result = self.clean_result(llm_data.raw_result)
+            res = llm_data.clean_result
         try:
             llm_data.result = self.return_cls(res)
         except ValueError as e:

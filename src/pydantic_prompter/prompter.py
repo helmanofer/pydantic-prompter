@@ -40,7 +40,7 @@ class _Pr:
             )
             logger.error(f"\n\nLLM output ----> \n\n{self.llm_data.raw_result}")
             logger.error(
-                f"\n\nLLM clean JSON output ----> \n\n{self.llm_data.clean_json_result}"
+                f"\n\nLLM clean JSON output ----> \n\n{self.llm_data.clean_result}"
             )
             logger.error(f"\n\nPrompt ----> \n\n{self.build_string(**inputs)}")
             logger.error(f"\n\n ----> END OF ERROR <---- ")

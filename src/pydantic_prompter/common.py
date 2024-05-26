@@ -23,7 +23,7 @@ class LLMDataAndResult(BaseModel):
     inputs: Dict[str, Any]
     messages: Optional[List[Message]] = None
     raw_result: Optional[str] = None
-    clean_json_result: Optional[Dict] = None
+    clean_result: Optional[Dict | str] = None
     result: Optional[BaseModel] = None
     error: Optional[Any] = None
     retries: int = 0

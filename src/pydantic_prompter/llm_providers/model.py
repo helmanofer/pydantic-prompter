@@ -162,7 +162,8 @@ DO NOT add any other text other than the JSON response
         body = json.dumps(
             {
                 "prompt": content,
-                "stop_sequences": self.model_settings.get("stop_sequences") or ["User:"],
+                "stop_sequences": self.model_settings.get("stop_sequences")
+                or ["User:"],
                 "temperature": self.model_settings.get("temperature") or uniform(0, 1),
             }
         )
@@ -190,7 +191,8 @@ class Claude(Model):
                 "messages": final_messages,
                 # "stop_sequences": ["Human:"],
                 "temperature": self.model_settings.get("temperature") or uniform(0, 1),
-                "anthropic_version": self.model_settings.get("anthropic_version") or "bedrock-2023-05-31",
+                "anthropic_version": self.model_settings.get("anthropic_version")
+                or "bedrock-2023-05-31",
             }
         )
         return body
