@@ -18,7 +18,7 @@ class _Pr:
         self.jinja = jinja
         self.function = function
         self.parser = AnnotationParser.get_parser(function)
-        self.llm = get_llm(provider_name=llm, model_name=model_name)
+        self.ai_provider = get_llm(provider_name=llm, model_name=model_name)
         self.llm_data = None
 
     @retry(tries=3, delay=1, logger=logger, exceptions=(Retryable,))
@@ -39,7 +39,9 @@ class _Pr:
                 f"\n\nError ----> \n\n{type(self.llm_data.error)}: {self.llm_data.error}"
             )
             logger.error(f"\n\nLLM output ----> \n\n{self.llm_data.raw_result}")
-            logger.error(f"\n\nLLM clean output ----> \n\n{self.llm_data.clean_result}")
+            logger.error(
+                f"\n\nLLM clean JSON output ----> \n\n{self.llm_data.clean_json_result}"
+            )
             logger.error(f"\n\nPrompt ----> \n\n{self.build_string(**inputs)}")
             logger.error(f"\n\n ----> END OF ERROR <---- ")
             raise self.llm_data.error
@@ -47,7 +49,7 @@ class _Pr:
 
     def build_string(self, **inputs) -> str:
         msgs = self._parse_docstring_to_messages(**inputs)
-        res = self.llm.debug_prompt(
+        res = self.ai_provider.debug_prompt(
             msgs, self.parser.llm_schema() or self.parser.llm_return_type()
         )
 
@@ -78,16 +80,18 @@ class _Pr:
     def call_llm(self, llm_data: LLMDataAndResult) -> LLMDataAndResult:
         if self.parser.llm_schema():  # pydantic schema
             return_scheme_llm_str = self.parser.llm_schema()
-            ret_str = self.llm.call(llm_data.messages, scheme=return_scheme_llm_str)
+            ret_str = self.ai_provider.call(
+                llm_data.messages, scheme=return_scheme_llm_str
+            )
         else:  # simple typings
             return_scheme_llm_str = self.parser.llm_return_type()
-            ret_str = self.llm.call(
+            ret_str = self.ai_provider.call(
                 llm_data.messages, return_type=return_scheme_llm_str
             )
 
         llm_data.raw_result = ret_str
-        res = self.llm.clean_result(ret_str)
-        llm_data.clean_result = res
+        # res = self.ai_provider.clean_result(ret_str)
+        # llm_data.clean_result = res
 
         self.parser.cast_result(llm_data)
         logger.debug(f"Response from llm: \n{ret_str}")
@@ -95,15 +99,15 @@ class _Pr:
 
 
 class Prompter:
-    def __init__(self, provider: str, model_name: str, jinja=False):
+    def __init__(self, ai_provider: str, model_name: str, jinja=False):
         self.model_name = model_name
-        self.llm = provider
+        self.ai_provider = ai_provider
         self.jinja = jinja
 
     def __call__(self, function):
         return _Pr(
             function=function,
             jinja=self.jinja,
-            llm=self.llm,
+            llm=self.ai_provider,
             model_name=self.model_name,
         )

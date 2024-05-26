@@ -33,8 +33,8 @@ class Provider(ABC):
     ) -> str:
         raise NotImplementedError
 
-    def clean_result(self, body: str):
-        return self.model.clean_results(body)
+    # def clean_result(self, body: str):
+    #     return self.model.clean_results(body)
 
 
 class OpenAI(Provider):

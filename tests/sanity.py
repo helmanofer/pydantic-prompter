@@ -21,7 +21,7 @@ def test_basic():
     class Hi(BaseModel):
         response: str
 
-    @Prompter(provider="openai", jinja=False, model_name="gpt-3.5-turbo")
+    @Prompter(ai_provider="openai", jinja=False, model_name="gpt-3.5-turbo")
     def funct(hello) -> Hi:
         """
         - user: say {hello}
@@ -42,7 +42,7 @@ def test_basic_2():
     class Hi(BaseModel):
         response: str
 
-    @Prompter(provider="openai", jinja=False, model_name="gpt-3.5-turbo")
+    @Prompter(ai_provider="openai", jinja=False, model_name="gpt-3.5-turbo")
     def funct(hello) -> Hi:
         """
         - user: say {hello}
@@ -55,7 +55,7 @@ def test_basic_2():
 
 
 def test_pydantic():
-    @Prompter(jinja=True, provider="openai", model_name="gpt-3.5-turbo")
+    @Prompter(jinja=True, ai_provider="openai", model_name="gpt-3.5-turbo")
     def bbb(name) -> PersonalInfo:
         """
         - system: you are a writer
@@ -77,7 +77,7 @@ def test_pydantic():
 
 
 def test_generic():
-    @Prompter(provider="openai", model_name="dc")
+    @Prompter(ai_provider="openai", model_name="dc")
     def aaa(name) -> MyChildren:
         """
         - user: hi, my name is {name} and my children are called, aa, bb, cc
@@ -99,7 +99,7 @@ def test_generic():
 
 
 def test_non_yaml():
-    @Prompter(provider="openai", model_name="dontcare", jinja=True)
+    @Prompter(ai_provider="openai", model_name="dontcare", jinja=True)
     def search_query(history) -> QueryGPTResponse:
         """
         {{ history }}
@@ -130,7 +130,7 @@ def test_non_yaml():
 
 
 def test_complex_question():
-    @Prompter(provider="openai", jinja=True, model_name="dc")
+    @Prompter(ai_provider="openai", jinja=True, model_name="dc")
     def rank_recommendation(json_entries, query) -> RecommendationResults:
         """
         - user:
@@ -164,7 +164,7 @@ def test_complex_question():
 
 
 def test_args_error():
-    @Prompter(provider="cohere", model_name="command")
+    @Prompter(ai_provider="cohere", model_name="command")
     def bbb(name) -> PersonalInfo:
         """
         - system: you are a writer

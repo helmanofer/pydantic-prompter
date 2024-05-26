@@ -17,7 +17,7 @@ class RecommendationResults(BaseModel):
     entries: List[RecommendedEntry]
 
 
-@Prompter(provider="openai", jinja=True, model_name="gpt-3.5-turbo-16k")
+@Prompter(ai_provider="openai", jinja=True, model_name="gpt-3.5-turbo-16k")
 def rank_recommendation(entries, query) -> RecommendationResults:
     """
     - system: You are a movie ranking expert

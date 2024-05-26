@@ -69,7 +69,7 @@ You can define your prompt as a YAML string with Jinja2 templating or simple str
 from pydantic_prompter import Prompter
 
 
-@Prompter(provider="openai", jinja=True, model_name="gpt-3.5-turbo-16k")
+@Prompter(ai_provider="openai", jinja=True, model_name="gpt-3.5-turbo-16k")
 def rank_recommendation(entries, query) -> RecommendationResults:
     """
     - system: You are a movie ranking expert

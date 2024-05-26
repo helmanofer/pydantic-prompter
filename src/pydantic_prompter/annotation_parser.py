@@ -1,5 +1,5 @@
 import abc
-import json
+from contextlib import suppress
 from json import JSONDecodeError
 from typing import Dict, Any
 
@@ -76,10 +76,13 @@ class PydanticParser(AnnotationParser):
 
     def cast_result(self, llm_data: LLMDataAndResult) -> LLMDataAndResult:
         try:
-            j = json.loads(llm_data.clean_result, strict=False)
+            from json_repair import json_repair
+
+            j = json_repair.loads(llm_data.raw_result)
+            llm_data.clean_json_result = j
             res = self.return_cls(**j)
             llm_data.result = res
-        except (ValidationError, JSONDecodeError) as e:
+        except (ValidationError, JSONDecodeError, RecursionError) as e:
             llm_data.error = FailedToCastLLMResult(e)
         return llm_data
 
@@ -95,13 +98,33 @@ class SimpleStringParser(AnnotationParser):
     def llm_return_type(self) -> str:
         return self.return_cls.__name__
 
+    def clean_result(self, body: str) -> str:
+        import re
+
+        if self.return_cls == bool:
+            if "true" in body.lower():
+                body = "true"
+            elif "false" in body.lower():
+                body = "false"
+        elif self.return_cls == int:
+            body = re.findall(r"\d+", body)[0]
+        elif self.return_cls == float:
+            body = re.findall(r"\d+.\d+", body)[0]
+        elif self.return_cls == str:
+            body = body.strip()
+        return body
+
     def cast_result(self, llm_data: LLMDataAndResult) -> LLMDataAndResult:
-        res = llm_data.clean_result
-        if "{" in res and "}" in res and '"res":' in res:
-            try:
-                res = json.loads(res, strict=False)["res"]
-            except JSONDecodeError as e:
-                llm_data.error = FailedToCastLLMResult(e)
+        res = None
+        with suppress(Exception):
+            from json_repair import json_repair
+
+            j = json_repair.loads(llm_data.raw_result, logging=logger)
+            if isinstance(j, dict):
+                res = j.get("res", j)
+        if not res:
+            llm_data.clean_json_result = self.clean_result(llm_data.raw_result)
+            res = llm_data.clean_json_result
         try:
             llm_data.result = self.return_cls(res)
         except ValueError as e:
