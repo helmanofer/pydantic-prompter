@@ -2,7 +2,7 @@ import json
 import random
 from typing import List, Union
 from typing import List, Optional, Dict
-
+from fix_busted_json import repair_json, largest_json
 from pydantic_prompter.common import Message, logger
 from pydantic_prompter.llm_providers.bedrock_base import BedRock
 from pydantic_prompter.annotation_parser import AnnotationParser
@@ -61,20 +61,29 @@ class BedRockAnthropic(BedRock):
     ) -> str:
 
         if scheme:
-            system_message = f"""Act like a REST API that answers the question contained in <question> tags.
-                    Your response should be within <json></json> xml tags in JSON format with the schema 
-                    specified in the <json_schema> tags.
-                    DO NOT add any other text other than the JSON response
+            system_message = f"""Act like a REST API that performs the requested operation the user asked according to guidelines provided.
+                    Your response should be a valid JSON format, strictly adhering to the Pydantic schema provided in the pydantic_schema section. 
+                    Stick to the facts and details in the provided data, and follow the guidelines closely.
+                    Respond in a structured JSON format according to the provided schema.
+                    DO NOT add any other text other than the requested JSON response. 
 
-                    <json_schema>
+                    ## pydantic_schema:
+
                     {json.dumps(scheme, indent=4)}
-                    </json_schema>
+                    
                     """
         else:  # return_type:
-            system_message = f"""Act like an answer bot that answers the question contained in <question> tags.
-                    Your response should be within <{return_type}></{return_type}> xml tags in {return_type} format .
-                    DO NOT add any other text other than the STRING response
-                    """
+            system_message = f"""Act like a REST API that performs the requested operation the user asked according to guidelines provided.
+                    Your response should be according to the format requested in the return_type section. 
+                    Stick to the facts and details in the provided data, and follow the guidelines closely.
+                    Respond in a structured JSON format according to the provided schema.
+                    DO NOT add any other text other than the requested return_type response. 
+
+                    ## return_type:
+
+                    {return_type}
+                    
+"""
 
         final_messages = [m.model_dump() for m in messages]
         final_messages = self.fix_messages(final_messages)
@@ -93,8 +102,9 @@ class BedRockAnthropic(BedRock):
         }
 
         response = self._boto_invoke(json.dumps(body))
-        res = response.get("body").read().decode()
-        response_body = json.loads(res)
-
+        response_text = response.get("body").read().decode()
+        response_json = repair_json(largest_json(response_text))
+        response_body = json.loads(response_json)
+        
         logger.info(response_body)
         return response_body.get("content")[0]["text"]
