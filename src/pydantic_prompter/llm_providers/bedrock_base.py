@@ -1,8 +1,7 @@
 import abc
 import json
 import random
-from typing import List
-from typing import Union
+from typing import List, Union
 
 from fix_busted_json import repair_json
 from jinja2 import Template

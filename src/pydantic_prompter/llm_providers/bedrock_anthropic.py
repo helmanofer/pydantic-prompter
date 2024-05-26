@@ -2,10 +2,13 @@ import json
 import random
 from typing import List, Union
 from typing import List, Optional, Dict
+from typing import Optional, Dict
+
 from fix_busted_json import repair_json, largest_json
+
+from pydantic_prompter.annotation_parser import AnnotationParser
 from pydantic_prompter.common import Message, logger
 from pydantic_prompter.llm_providers.bedrock_base import BedRock
-from pydantic_prompter.annotation_parser import AnnotationParser
 
 
 class BedRockAnthropic(BedRock):
@@ -23,7 +26,7 @@ class BedRockAnthropic(BedRock):
             "anthropic_version": "bedrock-2023-05-31",
         }
 
-    def _build_prompt(self, messages: List[Message], params: dict | str):
+    def _build_prompt(self, messages: List[Message], params: Union[dict, str]):
         return "\n".join([m.content for m in messages])
 
     @property
@@ -105,6 +108,6 @@ class BedRockAnthropic(BedRock):
         response_text = response.get("body").read().decode()
         response_json = repair_json(largest_json(response_text))
         response_body = json.loads(response_json)
-        
+
         logger.info(response_body)
         return response_body.get("content")[0]["text"]
