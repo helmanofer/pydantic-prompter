@@ -20,21 +20,31 @@ LLM_MODEL_MAP: Dict[str, Dict[str, Type[LLM]]] = {
     },
     "cohere": {
         "command": Cohere,
-    }
+    },
 }
 
-def get_llm(llm: str, model_name: str, parser: AnnotationParser, model_settings: dict | None = None) -> LLM:
+
+def get_llm(
+    llm: str,
+    model_name: str,
+    parser: AnnotationParser,
+    model_settings: Union[dict, None] = None,
+) -> LLM:
     if llm not in LLM_MODEL_MAP:
         raise ValueError(f"LLM type '{llm}' is not implemented")
-    
+
     # Extract the prefix from the model name. Adjust this logic as necessary.
-    model_prefix = model_name.split('.')[0]  # Extract 'anthropic' from 'anthropic.claude-3-sonnet-20240229-v1:0'
-    
+    model_prefix = model_name.split(".")[
+        0
+    ]  # Extract 'anthropic' from 'anthropic.claude-3-sonnet-20240229-v1:0'
+
     model_class = LLM_MODEL_MAP.get(llm, {}).get(model_prefix, None)
 
     if model_class is None:
-        raise ValueError(f"Model prefix '{model_prefix}' for LLM type '{llm}' is not implemented")
-    
+        raise ValueError(
+            f"Model prefix '{model_prefix}' for LLM type '{llm}' is not implemented"
+        )
+
     logger.debug(f"Using {model_class.__name__} provider with model {model_name}")
 
     return model_class(model_name, parser, model_settings)

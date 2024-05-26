@@ -1,13 +1,19 @@
 import json
 import random
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Union
 from fix_busted_json import repair_json, largest_json
 from pydantic_prompter.common import Message, logger
 from pydantic_prompter.llm_providers.bedrock_base import BedRock
 from pydantic_prompter.annotation_parser import AnnotationParser
 
+
 class BedRockAnthropic(BedRock):
-    def __init__(self, model_name: str, parser: AnnotationParser, model_settings: Optional[Dict] = None):
+    def __init__(
+        self,
+        model_name: str,
+        parser: AnnotationParser,
+        model_settings: Optional[Dict] = None,
+    ):
         super().__init__(model_name, parser)
         self.model_settings = model_settings or {
             "temperature": random.uniform(0, 1),
@@ -16,7 +22,7 @@ class BedRockAnthropic(BedRock):
             "anthropic_version": "bedrock-2023-05-31",
         }
 
-    def _build_prompt(self, messages: List[Message], params: dict | str):
+    def _build_prompt(self, messages: List[Message], params: Union[dict, str]):
         return "\n".join([m.content for m in messages])
 
     @property
@@ -49,8 +55,8 @@ class BedRockAnthropic(BedRock):
     def call(
         self,
         messages: List[Message],
-        scheme: dict | None = None,
-        return_type: str | None = None,
+        scheme: Union[dict, None] = None,
+        return_type: Union[str, None] = None,
     ) -> str:
 
         if scheme:
@@ -85,15 +91,19 @@ class BedRockAnthropic(BedRock):
         body = {
             "system": system_message,
             "messages": final_messages,
-            "stop_sequences": self.model_settings.get("stop_sequences", [self._stop_sequence]),
-            "anthropic_version": self.model_settings.get("anthropic_version", "bedrock-2023-05-31"),
-            **self.model_settings
+            "stop_sequences": self.model_settings.get(
+                "stop_sequences", [self._stop_sequence]
+            ),
+            "anthropic_version": self.model_settings.get(
+                "anthropic_version", "bedrock-2023-05-31"
+            ),
+            **self.model_settings,
         }
 
         response = self._boto_invoke(json.dumps(body))
         response_text = response.get("body").read().decode()
         response_json = repair_json(largest_json(response_text))
         response_body = json.loads(response_json)
-        
+
         logger.info(response_body)
         return response_body.get("content")[0]["text"]

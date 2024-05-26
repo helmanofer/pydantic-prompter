@@ -1,6 +1,6 @@
 import json
 import random
-from typing import List
+from typing import List, Union
 
 from pydantic_prompter.common import Message, logger
 from pydantic_prompter.llm_providers.bedrock_base import BedRock
@@ -33,8 +33,8 @@ class BedRockLlama2(BedRock):
     def call(
         self,
         messages: List[Message],
-        scheme: dict | None = None,
-        return_type: str | None = None,
+        scheme: Union[dict, None] = None,
+        return_type: Union[str, None] = None,
     ) -> str:
         content = self._build_prompt(messages, scheme or return_type)
 

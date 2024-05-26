@@ -1,7 +1,7 @@
 import abc
 import json
 import random
-from typing import List
+from typing import List, Union
 from jinja2 import Template
 from fix_busted_json import repair_json
 from pydantic_prompter.common import Message, logger
@@ -42,7 +42,7 @@ class BedRock(LLM, abc.ABC):
     def format_messages(self, msgs: List[Message]) -> str:
         raise NotImplementedError
 
-    def _build_prompt(self, messages: List[Message], params: dict | str):
+    def _build_prompt(self, messages: List[Message], params: Union[dict, str]):
         if "prompt_templates" not in self._template_path:
             logger.info(f"Using custom prompt from {self._template_path}")
         ant_template = open(self._template_path).read()
@@ -55,7 +55,7 @@ class BedRock(LLM, abc.ABC):
         content = template.render(schema=scheme_, question=ant_msgs).strip()
         return content
 
-    def debug_prompt(self, messages: List[Message], scheme: dict | str) -> str:
+    def debug_prompt(self, messages: List[Message], scheme: Union[dict, str]) -> str:
         return self._build_prompt(messages, scheme)
 
     def _boto_invoke(self, body):
@@ -63,7 +63,7 @@ class BedRock(LLM, abc.ABC):
             logger.debug(f"Request body: \n{body}")
             import boto3
             from botocore.config import Config
-            
+
             session = boto3.Session(
                 aws_access_key_id=self.settings.aws_access_key_id,
                 aws_secret_access_key=self.settings.aws_secret_access_key,
@@ -72,12 +72,15 @@ class BedRock(LLM, abc.ABC):
                 region_name=self.settings.aws_default_region,
             )
             config = Config(
-                read_timeout=120, # 2 minutes before timeout
-                retries={'max_attempts': 5, 'mode': 'adaptive'}, # retry 5 times adaptivly
-                max_pool_connections=50 # allow for significant concurrency
+                read_timeout=120,  # 2 minutes before timeout
+                retries={
+                    "max_attempts": 5,
+                    "mode": "adaptive",
+                },  # retry 5 times adaptivly
+                max_pool_connections=50,  # allow for significant concurrency
             )
-            client = session.client('bedrock-runtime', config=config)
-            #execute the model
+            client = session.client("bedrock-runtime", config=config)
+            # execute the model
             response = client.invoke_model(
                 body=body,
                 modelId=self.model_name,
@@ -92,8 +95,8 @@ class BedRock(LLM, abc.ABC):
     def call(
         self,
         messages: List[Message],
-        scheme: dict | None = None,
-        return_type: str | None = None,
+        scheme: Union[dict, None] = None,
+        return_type: Union[str, None] = None,
     ) -> str:
         content = self._build_prompt(messages, scheme or return_type)
 

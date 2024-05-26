@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from pydantic_prompter.annotation_parser import AnnotationParser
 from pydantic_prompter.common import Message
@@ -16,13 +16,13 @@ class LLM:
         self.settings = Settings()
         self.model_name = model_name
 
-    def debug_prompt(self, messages: List[Message], scheme: dict | str):
+    def debug_prompt(self, messages: List[Message], scheme: Union[dict, str]):
         raise NotImplementedError
 
     def call(
         self,
         messages: List[Message],
-        scheme: dict | None = None,
-        return_type: str | None = None,
+        scheme: Union[dict, None] = None,
+        return_type: Union[str, None] = None,
     ) -> str:
         raise NotImplementedError
