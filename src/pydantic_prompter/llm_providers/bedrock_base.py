@@ -2,9 +2,8 @@ import abc
 import json
 import random
 from typing import List
-
 from jinja2 import Template
-
+from fix_busted_json import repair_json
 from pydantic_prompter.common import Message, logger
 from pydantic_prompter.exceptions import BedRockAuthenticationError
 from pydantic_prompter.llm_providers.base import LLM
@@ -63,7 +62,8 @@ class BedRock(LLM, abc.ABC):
         try:
             logger.debug(f"Request body: \n{body}")
             import boto3
-
+            from botocore.config import Config
+            
             session = boto3.Session(
                 aws_access_key_id=self.settings.aws_access_key_id,
                 aws_secret_access_key=self.settings.aws_secret_access_key,
@@ -71,7 +71,13 @@ class BedRock(LLM, abc.ABC):
                 profile_name=self.settings.aws_profile,
                 region_name=self.settings.aws_default_region,
             )
-            client = session.client("bedrock-runtime")
+            config = Config(
+                read_timeout=120, # 2 minutes before timeout
+                retries={'max_attempts': 5, 'mode': 'adaptive'}, # retry 5 times adaptivly
+                max_pool_connections=50 # allow for significant concurrency
+            )
+            client = session.client('bedrock-runtime', config=config)
+            #execute the model
             response = client.invoke_model(
                 body=body,
                 modelId=self.model_name,
@@ -101,6 +107,8 @@ class BedRock(LLM, abc.ABC):
         )
 
         response = self._boto_invoke(body)
-        response_body = json.loads(response.get("body").read().decode())
+        response_text = response.get("body").read().decode()
+        response_json = repair_json(response_text)
+        response_body = json.loads(response_json)
         logger.info(response_body)
         return response_body.get("completion")
