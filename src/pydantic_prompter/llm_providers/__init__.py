@@ -3,6 +3,7 @@ from pydantic_prompter.llm_providers.model import (
     Model,
     Llama2,
     CohereCommand,
+    CohereCommandR,
     Claude,
     GPT,
 )
@@ -20,7 +21,9 @@ def get_llm(provider_name: str, model_name: str) -> Provider:
         model_ = Llama2(model_name)
     elif "llama3" in model_name:
         model_ = Llama2(model_name)
-    elif "cohere" in model_name or "command" in model_name:
+    elif "command-r" in model_name:
+        model_ = CohereCommandR(model_name)
+    elif "command" in model_name:
         model_ = CohereCommand(model_name)
     elif "claude" in model_name:
         model_ = Claude(model_name)

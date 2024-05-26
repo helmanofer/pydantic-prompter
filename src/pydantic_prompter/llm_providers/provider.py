@@ -172,6 +172,7 @@ class Bedrock(Provider):
             or response_body.get("generation")
             or response_body.get("generations", [{}])[0].get("text")
             or response_body.get("content", [{}])[0].get("text")
+            or response_body.get("text")
         )
         return res
 
@@ -233,7 +234,8 @@ class Cohere(Provider):
         content = self.model.build_prompt(messages, scheme or return_type)
         content = self.model.format_messages(content)
         response = co.chat(
-            message=content,
+            message=" ",
+            chat_history=content,
             temperature=random.uniform(0, 1),
         )
 

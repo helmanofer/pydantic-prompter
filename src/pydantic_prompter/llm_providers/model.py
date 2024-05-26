@@ -38,10 +38,30 @@ class Model(ABC):
         return fixed_messages
 
     def system_message_jinja2(self):
-        raise NotImplementedError
+        pmpt = """Act like a REST API that performs the requested operation the user asked according to guidelines provided.
+                {% if return_type == 'json' %}
+                    Your response should be a valid JSON format, strictly adhering to the Pydantic schema provided in the json_schema section. 
+                    Respond in a structured JSON format according to the provided schema.
+
+                ```json_schema
+                    {{ schema }}
+                ```
+                {% else %}
+                        Your response should be a valid {{ return_type }} only
+                {% endif %}
+                        Stick to the facts and details in the provided data, and follow the guidelines closely.
+                        DO NOT add any other text other than the {{ return_type }} response
+                    """
+        return inspect.cleandoc(pmpt)
 
     def assistant_hint_jinja2(self):
-        raise NotImplementedError
+        pmpt = """
+            {% if return_type == 'json' %}
+                ```{{ return_type }}
+            {% else %}
+            {% endif %}
+                """
+        return inspect.cleandoc(pmpt)
 
     def build_prompt(
         self, messages: List[Message], params: dict | str
@@ -55,10 +75,18 @@ class Model(ABC):
                 schema=json.dumps(params, indent=4), return_type="json"
             ).strip()
 
-            hint = Template(self.assistant_hint_jinja2()).render(return_type="json")
+            hint = (
+                Template(self.assistant_hint_jinja2())
+                .render(return_type="json")
+                .strip()
+            )
         else:
             content = template.render(schema=params, return_type=params).strip()
-            hint = Template(self.assistant_hint_jinja2()).render(return_type=params)
+            hint = (
+                Template(self.assistant_hint_jinja2())
+                .render(return_type=params)
+                .strip()
+            )
 
         messages.insert(0, Message(role="system", content=content))
         messages.append(Message(role="assistant", content=hint))
@@ -78,32 +106,6 @@ class GPT(Model):
 class Llama2(Model):
     def __init__(self, model_name: str):
         super().__init__(model_name)
-
-    def system_message_jinja2(self):
-        pmpt = """Act like a REST API
-                {% if return_type == 'json' %}
-                Your response should be within JSON markdown block in JSON format
-                with the schema 
-                specified in the <json_schema> tags.
-
-                <json_schema>
-                {{ schema }}
-                </json_schema>
-                {% else %}
-                Your response should be {{ return_type }} only
-                {% endif %}
-
-                DO NOT add any other text other than the {{ return_type }} response
-            """
-        return pmpt
-
-    def assistant_hint_jinja2(self):
-        return """
-        {% if return_type == 'json' %}
-        ```{{ return_type }}
-        {% else %}
-        {% endif %}
-        """
 
     def fix_and_merge_messages(self, msgs: List[Message]) -> List[Message]:
         msgs = super().fix_and_merge_messages(msgs)
@@ -132,36 +134,37 @@ class Llama2(Model):
 
 class CohereCommand(Model):
 
-    def system_message_jinja2(self):
-        pmp = """Act like a REST API
-{% if return_type == 'json' %}
-Your response should be within a JSON markdown block in JSON format 
-with the schema specified in the json_schema markdown block.
+    #     def system_message_jinja2(self):
+    #         pmp = """Act like a REST API
+    # {% if return_type == 'json' %}
+    # Your response should be within a JSON markdown block in JSON format
+    # with the schema specified in the json_schema markdown block.
+    #
+    # ```json_schema
+    # {{ schema }}
+    # ```
+    # {% else %}
+    # Your response should be {{ return_type }} only
+    # {% endif %}
+    #
+    # DO NOT add any other text other than the JSON response
+    # """
+    #         return pmp
 
-```json_schema
-{{ schema }}
-```
-{% else %}
-Your response should be {{ return_type }} only
-{% endif %}
-
-DO NOT add any other text other than the JSON response
-"""
-        return pmp
-
-    def assistant_hint_jinja2(self):
-        return """{% if return_type == 'json' %}
-                ```json
-                {% else %}
-                {% endif %}
-                """
-        # return "Chatbot: ```{{ return_type }}\n"
+    # def assistant_hint_jinja2(self):
+    #     return """{% if return_type == 'json' %}
+    #             ```json
+    #             {% else %}
+    #             {% endif %}
+    #             """
+    #     # return "Chatbot: ```{{ return_type }}\n"
 
     def bedrock_format(self, msgs: List[Message]):
         content = self.format_messages(msgs)
+        prompt = "\n".join([f"{c['role']}: {c['message']}" for c in content])
         body = json.dumps(
             {
-                "prompt": content,
+                "prompt": prompt,
                 "stop_sequences": self.model_settings.get("stop_sequences")
                 or ["User:"],
                 "temperature": self.model_settings.get("temperature") or uniform(0, 1),
@@ -169,13 +172,66 @@ DO NOT add any other text other than the JSON response
         )
         return body
 
+    # @staticmethod
+    # def format_messages(msgs: List[Message]) -> str:
+    #     role_converter = {"user": "User", "system": "System", "assistant": "Chatbot"}
+    #     output = []
+    #     for msg in msgs:
+    #         output.append(f"{role_converter[msg.role]}: {msg.content}")
+    #     return "\n".join(output)
+
     @staticmethod
-    def format_messages(msgs: List[Message]) -> str:
-        role_converter = {"user": "User", "system": "System", "assistant": "Chatbot"}
+    def format_messages(msgs: List[Message]) -> List[dict]:
+        role_converter = {"user": "USER", "system": "USER", "assistant": "CHATBOT"}
         output = []
         for msg in msgs:
-            output.append(f"{role_converter[msg.role]}: {msg.content}")
-        return "\n".join(output)
+            if msg.role == "system":
+                msg.content = f"## Instructions\n{msg.content}"
+            output.append({"role": role_converter[msg.role], "message": msg.content})
+        return output
+
+
+class CohereCommandR(CohereCommand):
+
+    #     def system_message_jinja2(self):
+    #         pmp = """Act like a REST API
+    # {% if return_type == 'json' %}
+    # Your response should be within a JSON markdown block in JSON format
+    # with the schema specified in the json_schema markdown block.
+    #
+    # ```json_schema
+    # {{ schema }}
+    # ```
+    # {% else %}
+    # Your response should be {{ return_type }} only
+    # {% endif %}
+    #
+    # DO NOT add any other text other than the JSON response
+    # """
+    #         return pmp
+
+    # def assistant_hint_jinja2(self):
+    #     return """{% if return_type == 'json' %}
+    #             ```json
+    #             {% else %}
+    #             {% endif %}
+    #             """
+    #     # return "Chatbot: ```{{ return_type }}\n"
+
+    def bedrock_format(self, msgs: List[Message]):
+        content: List[dict] = self.format_messages(msgs)
+        prompt = "\n".join([f"{c['role']}: {c['message']}" for c in content])
+        body = json.dumps(
+            {
+                # "chat_history": content[1:],
+                "message": prompt,
+                "max_tokens": 20000,
+                "stop_sequences": self.model_settings.get("stop_sequences")
+                or ["User:"],
+                "temperature": self.model_settings.get("temperature") or uniform(0, 1),
+            }
+        )
+        return body
 
 
 class Claude(Model):
@@ -196,22 +252,3 @@ class Claude(Model):
             }
         )
         return body
-
-    def assistant_hint_jinja2(self):
-        return "assistant: <{{ return_type }}>\n"
-
-    def system_message_jinja2(self):
-        pmpt = """Act like a REST API response server
-            Your response should be within <{{ return_type }}></{{ return_type }}> xml tags in {{ return_type }} format
-            {% if return_type == 'json' %}
-            with the schema
-            specified in the <json_schema> tags.
-
-            <json_schema>
-            {{ schema }}
-            </json_schema>
-            {% endif %}
-
-            DO NOT add any other text other than the {{ return_type }} response
-            """
-        return inspect.cleandoc(pmpt)
