@@ -1,13 +1,13 @@
 import json
 import random
-from typing import List
+from typing import List, Union
 
 from pydantic_prompter.common import Message, logger
 from pydantic_prompter.llm_providers.bedrock_base import BedRock
 
 
 class BedRockAnthropic(BedRock):
-    def _build_prompt(self, messages: List[Message], params: dict | str):
+    def _build_prompt(self, messages: List[Message], params: Union[dict, str]):
         return "\n".join([m.content for m in messages])
 
     @property
@@ -40,8 +40,8 @@ class BedRockAnthropic(BedRock):
     def call(
         self,
         messages: List[Message],
-        scheme: dict | None = None,
-        return_type: str | None = None,
+        scheme: Union[dict, None] = None,
+        return_type: Union[str, None] = None,
     ) -> str:
 
         if scheme:

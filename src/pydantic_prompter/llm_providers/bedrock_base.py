@@ -1,7 +1,7 @@
 import abc
 import json
 import random
-from typing import List
+from typing import List, Union
 
 from jinja2 import Template
 
@@ -43,7 +43,7 @@ class BedRock(LLM, abc.ABC):
     def format_messages(self, msgs: List[Message]) -> str:
         raise NotImplementedError
 
-    def _build_prompt(self, messages: List[Message], params: dict | str):
+    def _build_prompt(self, messages: List[Message], params: Union[dict, str]):
         if "prompt_templates" not in self._template_path:
             logger.info(f"Using custom prompt from {self._template_path}")
         ant_template = open(self._template_path).read()
@@ -56,7 +56,7 @@ class BedRock(LLM, abc.ABC):
         content = template.render(schema=scheme_, question=ant_msgs).strip()
         return content
 
-    def debug_prompt(self, messages: List[Message], scheme: dict | str) -> str:
+    def debug_prompt(self, messages: List[Message], scheme: Union[dict, str]) -> str:
         return self._build_prompt(messages, scheme)
 
     def _boto_invoke(self, body):
@@ -86,8 +86,8 @@ class BedRock(LLM, abc.ABC):
     def call(
         self,
         messages: List[Message],
-        scheme: dict | None = None,
-        return_type: str | None = None,
+        scheme: Union[dict, None] = None,
+        return_type: Union[str, None] = None,
     ) -> str:
         content = self._build_prompt(messages, scheme or return_type)
 

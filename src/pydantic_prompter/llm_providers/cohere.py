@@ -1,5 +1,5 @@
 import random
-from typing import List
+from typing import List, Union
 
 from pydantic_prompter.common import Message, logger
 from pydantic_prompter.exceptions import CohereAuthenticationError
@@ -18,8 +18,8 @@ class Cohere(BedRockCohere):
     def call(
         self,
         messages: List[Message],
-        scheme: dict | None = None,
-        return_type: str | None = None,
+        scheme: Union[dict, None] = None,
+        return_type: Union[str, None] = None,
     ) -> str:
         try:
             import cohere
