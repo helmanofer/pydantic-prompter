@@ -5,7 +5,7 @@
 groups = ["default", "openai", "test", "lint", "docs", "bedrock", "dev", "chere"]
 strategy = ["cross_platform"]
 lock_version = "4.4.1"
-content_hash = "sha256:048f211fd804fab3fba54f75c9743a3d1dd1c8995f7570a7b77a4e9755c73591"
+content_hash = "sha256:85f65afdb89ea53902b05eee438ee070cabe4e2d3152d50bebaff537d9d1c424"
 
 [[package]]
 name = "aiohttp"
@@ -563,6 +563,16 @@ summary = "A platform independent file lock."
 files = [
     {file = "filelock-3.13.1-py3-none-any.whl", hash = "sha256:57dbda9b35157b05fb3e58ee91448612eb674172fab98ee235ccb0b5bee19a1c"},
     {file = "filelock-3.13.1.tar.gz", hash = "sha256:521f5f56c50f8426f5e03ad3b281b490a87ef15bc6c526f168290f0c7148d44e"},
+]
+
+[[package]]
+name = "fix-busted-json"
+version = "0.0.18"
+requires_python = ">=3.6"
+summary = "Fixes broken JSON string objects"
+files = [
+    {file = "fix-busted-json-0.0.18.tar.gz", hash = "sha256:93c5dab7cae3b5d0b055f2c7043f9fe727a88a80d0be753c5f2c20bb9b69672f"},
+    {file = "fix_busted_json-0.0.18-py3-none-any.whl", hash = "sha256:fdce0e02c9a810b3aa28e1c3c32c24b21b44e89f6315ec25d2b963bd52a6ef03"},
 ]
 
 [[package]]
