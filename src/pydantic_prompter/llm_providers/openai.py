@@ -63,10 +63,10 @@ class OpenAI(LLM):
             chat_completion = client.chat.completions.create(
                 model=self.model_name,
                 messages=messages_oai,
-                functions=[scheme],
-                function_call=_function_call,
+                tools=[{"type": "function", "function": scheme}],
+                tool_choice={"type": "function", "function": {"name": scheme["name"]}},
                 temperature=random.uniform(0.3, 1.3),
             )
         except (AuthenticationError, APIConnectionError, OpenAIError) as e:
             raise OpenAiAuthenticationError(e)
-        return chat_completion.choices[0].message.function_call.arguments
+        return chat_completion.choices[0].message.tool_calls[0].function.arguments

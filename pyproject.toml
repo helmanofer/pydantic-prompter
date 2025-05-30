@@ -31,6 +31,12 @@ bedrock = [
 chere = [
     "cohere>=4.46",
 ]
+test = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "python-dotenv==1.0.0",
+    "openai>=1.6.1", # Added openai here
+]
 
 [build-system]
 requires = ["pdm-backend"]
@@ -50,11 +56,6 @@ markers = [
     "serial",
 ]
 [tool.pdm.dev-dependencies]
-test = [
-    "pytest>=7.4.0",
-    "pytest-cov>=4.1.0",
-    "python-dotenv==1.0.0",
-]
 lint = [
     "flake8>=6.1.0",
     "black>=23.7.0",

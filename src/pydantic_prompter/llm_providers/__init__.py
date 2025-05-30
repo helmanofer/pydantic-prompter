@@ -38,13 +38,19 @@ def get_llm(
         0
     ]  # Extract 'anthropic' from 'anthropic.claude-3-sonnet-20240229-v1:0'
 
-    model_class = LLM_MODEL_MAP.get(llm, {}).get(model_prefix, None)
+    if llm == "openai":
+        model_class = LLM_MODEL_MAP.get(llm, {}).get("default")
+    else:
+        model_class = LLM_MODEL_MAP.get(llm, {}).get(model_prefix, None)
 
     if model_class is None:
-        raise ValueError(
-            f"Model prefix '{model_prefix}' for LLM type '{llm}' is not implemented"
-        )
+        # Fallback to default if specific prefix not found for other llms, or if llm is openai and default is not found (which would be an issue)
+        model_class = LLM_MODEL_MAP.get(llm, {}).get("default")
+        if model_class is None:
+            raise ValueError(
+                f"Model prefix '{model_prefix}' or default for LLM type '{llm}' is not implemented"
+            )
 
     logger.debug(f"Using {model_class.__name__} provider with model {model_name}")
 
-    return model_class(model_name, parser, model_settings)
+    return model_class(model_name, parser)
