@@ -9,12 +9,18 @@ class LLM:
     def clean_result(body: str):
         return body
 
-    def __init__(self, model_name: str, parser: AnnotationParser):
+    def __init__(
+        self,
+        model_name: str,
+        parser: AnnotationParser,
+        model_settings: Union[dict, None] = None,
+    ):
         from pydantic_prompter.settings import Settings
 
         self.parser: AnnotationParser = parser
         self.settings = Settings()
         self.model_name = model_name
+        self.model_settings = model_settings or {}
 
     def debug_prompt(self, messages: List[Message], scheme: Union[dict, str]):
         raise NotImplementedError

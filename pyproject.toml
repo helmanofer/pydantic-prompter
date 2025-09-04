@@ -31,25 +31,6 @@ bedrock = [
 chere = [
     "cohere>=4.46",
 ]
-
-[build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
-
-[tool.pytest.ini_options]
-testpaths = [
-    "tests/*",
-]
-log_level = "INFO"
-log_format = "%(asctime)s %(levelname)s %(filename)s %(lineno)d - %(message)s"
-log_date_format = "%Y-%m-%d %H:%M:%S"
-log_cli = true
-log_cli_level = "INFO"
-markers = [
-    "live",
-    "serial",
-]
-[tool.pdm.dev-dependencies]
 test = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
@@ -66,6 +47,25 @@ docs = [
 ]
 dev = [
     "tox-pdm>=0.6.1",
+    "build",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests/*",
+]
+log_level = "INFO"
+log_format = "%(asctime)s %(levelname)s %(filename)s %(lineno)d - %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+log_cli = true
+log_cli_level = "INFO"
+markers = [
+    "live",
+    "serial",
 ]
 
 [project.urls]
