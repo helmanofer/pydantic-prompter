@@ -10,17 +10,13 @@ from pydantic_prompter.llm_providers.base import LLM
 
 # Mapping of llm type and model_name prefixes to their respective classes
 LLM_MODEL_MAP: Dict[str, Dict[str, Type[LLM]]] = {
-    "openai": {
-        "default": OpenAI,
-    },
+    "openai": {"default": OpenAI},
     "bedrock": {
         "anthropic": BedRockAnthropic,
         "cohere": BedRockCohere,
         "meta": BedRockLlama2,
     },
-    "cohere": {
-        "command": Cohere,
-    },
+    "cohere": {"command": Cohere, "command-light": Cohere},
 }
 
 
@@ -38,7 +34,8 @@ def get_llm(
         0
     ]  # Extract 'anthropic' from 'anthropic.claude-3-sonnet-20240229-v1:0'
 
-    model_class = LLM_MODEL_MAP.get(llm, {}).get(model_prefix, None)
+    provider_map = LLM_MODEL_MAP.get(llm, {})
+    model_class = provider_map.get(model_prefix, provider_map.get("default"))
 
     if model_class is None:
         raise ValueError(
@@ -47,4 +44,6 @@ def get_llm(
 
     logger.debug(f"Using {model_class.__name__} provider with model {model_name}")
 
-    return model_class(model_name, parser, model_settings)
+    return model_class(
+        model_name=model_name, parser=parser, model_settings=model_settings
+    )

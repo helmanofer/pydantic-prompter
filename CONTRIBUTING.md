@@ -25,18 +25,21 @@ Pull requests are highly appreciated. Please follow these guidelines:
 
 ## Getting Started
 
-This project uses Poetry for dependency and environment management. To set up your system locally:
+This project uses `uv` for dependency and environment management. To set up your system locally:
 
-1. Install PDM `pip install pdm`
-2. Clone the repo 
-3. Run `pdm install`
+1. Install `uv`: `pip install uv`
+2. Clone the repo
+3. Create a virtual environment: `uv venv`
+4. Install dependencies: `uv pip sync uv.lock`
+5. Install the project in editable mode: `uv pip install -e .`
+
 
 ## Testing
 
-Tests are written using the built-in `unittest` module. To run all tests:
+Tests are written using `pytest`. To run all tests, first activate the virtual environment: `source .venv/bin/activate`, then run:
 
 ```
-pdm run pytest
+pytest
 ```
 
 ## Licensing

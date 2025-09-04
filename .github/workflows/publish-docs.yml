@@ -15,7 +15,8 @@ jobs:
         with:
           python-version: '3.10'
           cache: 'pip'
-      - run: pip install mkdocs-material
+      - run: pip install uv
+      - run: uv pip install mkdocs-material
       - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
       - uses: actions/cache@v3
         with:
